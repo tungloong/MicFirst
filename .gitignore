@@ -1,0 +1,17 @@
+build/
+DerivedData/
+dist/
+.build/
+*.dSYM
+*.dSYM.zip
+*.xcarchive
+*.ipa
+*.xcuserstate
+xcuserdata/
+*.moved-aside
+*.xcscmblueprint
+.swiftpm/
+.DS_Store
+.env
+.env.*
+.claude/
