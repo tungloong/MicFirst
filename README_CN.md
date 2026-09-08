@@ -39,7 +39,7 @@ AudioInputLocker 的现有下载属于它自己的产品。
 - 设置窗口保留带优先级序号的完整列表，支持排序、隐藏和删除离线设备。
 - 手动隐藏的设备不参与自动选择。
 - 手动选择其他设备会关闭自动模式，同时保留排序。
-- 确认自动恢复成功后显示原有的短暂 HUD。
+- 确认自动恢复成功后显示短暂 HUD，可在 Settings 中关闭。
 - 支持英文和简体中文，并跟随系统语言。
 
 ## 系统要求
@@ -65,6 +65,8 @@ cd MicFirst
 ```
 
 这个脚本会构建 Debug app，停止正在运行的 `MicFirst` 和 `AudioInputLocker` 进程，然后从 `build/DerivedData` 打开新构建的 MicFirst app。
+
+当前 Debug 脚本还会在已有辅助功能授权的执行环境中，通过公开 API 一次性读取菜单栏按钮坐标。HUD 目前依赖这份启动快照，独立启动／Release 的接入仍未完成；麦克风自动优先级功能独立工作。详见 [HUD 行为与限制](docs/input-priority.md)。
 
 手动构建：
 
@@ -143,7 +145,7 @@ MicFirst 使用 SwiftUI、AppKit 和 Core Audio 构建。
 - Core Audio 用于设备枚举、默认输入切换、输入音量读写和设备变化监听。
 - 设备排序、已记住的设备信息和自动模式开关保存在本地 `UserDefaults`。
 - 已加入 App Sandbox entitlements，用于 Mac App Store 验证。
-- HUD 是一个位于 status-bar level 的 `NSPanel`，可以靠近菜单栏显示，同时不抢占普通 app 焦点。
+- HUD 使用无边框 `NSWindow`，位于普通弹出菜单之上，不获取 key/main 焦点。macOS 26+ 使用无 tint 的 clear 玻璃，底下叠加 0.80 不透明度的 Popover 材质以改善可读性。
 - app 不使用私有 API。
 
 ## 隐私

@@ -26,10 +26,6 @@ struct InputDevice: Identifiable, Equatable {
     var iconSystemName: String {
         DeviceIconMapper.symbol(for: self)
     }
-
-    var mayTriggerNativeRouteHUD: Bool {
-        NativeRouteHUDHeuristic.mayTrigger(for: self)
-    }
 }
 
 private enum DeviceIconMapper {
@@ -131,30 +127,6 @@ private enum DeviceIconMapper {
         candidates.first { NSImage(systemSymbolName: $0, accessibilityDescription: nil) != nil }
             ?? candidates.last
             ?? "mic"
-    }
-}
-
-private enum NativeRouteHUDHeuristic {
-    static func mayTrigger(for device: InputDevice) -> Bool {
-        if AppleBluetoothAudioProduct.product(for: device) != nil {
-            return true
-        }
-
-        switch device.transportType {
-        case kAudioDeviceTransportTypeContinuityCaptureWired,
-             kAudioDeviceTransportTypeContinuityCaptureWireless:
-            return true
-        default:
-            break
-        }
-
-        return device.name.containsAnyCaseInsensitive([
-            "airpods",
-            "beats",
-            "earpods",
-            "iphone",
-            "ipad"
-        ]) || device.name.containsWordCaseInsensitive("phone")
     }
 }
 

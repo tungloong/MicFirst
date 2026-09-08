@@ -1,5 +1,97 @@
+import AppKit
 import CoreAudio
 import XCTest
+
+final class HUDPlacementTests: XCTestCase {
+    private let screen = CGRect(x: 0, y: 0, width: 1710, height: 1112)
+    private let anchor = CGRect(x: 1115, y: 971, width: 360, height: 136)
+
+    func testStandaloneHUDKeepsItsOwnAnchor() {
+        let placement = HUDPlacement()
+        XCTAssertEqual(placement.frame(anchoredAt: anchor, capsuleSize: CGSize(width: 235, height: 52), on: screen), anchor)
+    }
+
+    func testVisibleCapsuleRemainsOnAnotherDisplay() throws {
+        let otherScreen = CGRect(x: -1920, y: 1112, width: 1920, height: 1080)
+        let otherAnchor = CGRect(x: -100, y: 2150, width: 360, height: 136)
+        let placement = HUDPlacement()
+        let frame = try XCTUnwrap(placement.frame(anchoredAt: otherAnchor, capsuleSize: CGSize(width: 235, height: 52), on: otherScreen))
+        let visible = CGRect(x: frame.minX + 62.5, y: frame.minY + 42, width: 235, height: 52)
+        XCTAssertTrue(otherScreen.contains(visible))
+        XCTAssertEqual(visible.maxX, otherScreen.maxX - 6)
+    }
+
+    func testNoRoomForHostingWindowReturnsNil() {
+        XCTAssertNil(HUDPlacement().frame(anchoredAt: anchor, capsuleSize: CGSize(width: 235, height: 52), on: CGRect(x: 0, y: 0, width: 200, height: 100)))
+    }
+}
+
+@MainActor
+final class HUDGlassAppearanceTests: XCTestCase {
+    func testPresentationBurstFinishesWithoutPeriodicMaintenance() async throws {
+        var claims = 0
+        let completed = expectation(description: "The presentation burst completes")
+        let session = HUDGlassAppearanceSession(notificationCenter: NotificationCenter()) {
+            claims += 1
+            if claims == 18 { completed.fulfill() }
+        }
+        session.start()
+        await fulfillment(of: [completed], timeout: 2)
+        let claimsAfterBurst = claims
+        try await Task.sleep(nanoseconds: 1_200_000_000)
+        XCTAssertEqual(claims, claimsAfterBurst, "A visible, idle HUD must not receive one-second refreshes")
+        session.stop()
+    }
+
+    func testAppChangesRefreshWhileVisibleAndDismissalCancelsWork() async throws {
+        let center = NotificationCenter()
+        var claims = 0
+        var target = 18
+        let initial = expectation(description: "Initial appearance burst finishes")
+        var nextClaim: XCTestExpectation? = initial
+        let session = HUDGlassAppearanceSession(notificationCenter: center) {
+            claims += 1
+            if claims == target {
+                nextClaim?.fulfill()
+                nextClaim = nil
+            }
+        }
+        session.start()
+        await fulfillment(of: [initial], timeout: 2)
+        for name in [NSWorkspace.didActivateApplicationNotification, NSWorkspace.didDeactivateApplicationNotification] {
+            let refreshed = expectation(description: "Refresh after \(name.rawValue)")
+            nextClaim = refreshed
+            target = claims + 18
+            center.post(name: name, object: nil)
+            await fulfillment(of: [refreshed], timeout: 2)
+        }
+        center.post(name: NSWorkspace.didActivateApplicationNotification, object: nil)
+        session.stop()
+        let claimsAtDismissal = claims
+        center.post(name: NSWorkspace.didActivateApplicationNotification, object: nil)
+        center.post(name: NSWorkspace.didDeactivateApplicationNotification, object: nil)
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertEqual(claims, claimsAtDismissal)
+
+        let reused = expectation(description: "Reused HUD restarts the presentation burst")
+        nextClaim = reused
+        target = claims + 1
+        session.start()
+        await fulfillment(of: [reused], timeout: 1)
+        session.stop()
+    }
+
+    func testReleasingSessionCancelsRefreshAndObservers() async throws {
+        let center = NotificationCenter()
+        var claims = 0
+        var session: HUDGlassAppearanceSession? = HUDGlassAppearanceSession(notificationCenter: center) { claims += 1 }
+        session?.start()
+        session = nil
+        center.post(name: NSWorkspace.didActivateApplicationNotification, object: nil)
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertEqual(claims, 0)
+    }
+}
 
 @MainActor
 final class InputPriorityTests: XCTestCase {
@@ -97,6 +189,58 @@ final class InputPriorityTests: XCTestCase {
         await audio.emitChange()
         XCTAssertEqual(audio.writes, [1])
         XCTAssertTrue(model.automaticInputIsEnabled)
+    }
+
+    func testAppleDeviceAvailabilityDoesNotCreateAHUDWithoutRestoration() async {
+        let (model, audio, hud) = makeModel()
+        audio.available.append(device(4, name: "AirPods", transport: kAudioDeviceTransportTypeBluetooth))
+        await audio.emitChange()
+        await audio.emitChange()
+        audio.available.removeAll { $0.id == 4 }
+        await audio.emitChange()
+        XCTAssertTrue(hud.shownNames.isEmpty)
+        XCTAssertTrue(audio.writes.isEmpty)
+        XCTAssertTrue(model.automaticInputIsEnabled)
+    }
+
+    func testExternalAirPodsTakeoverRestoresAndShowsHUDImmediately() async throws {
+        let (model, audio, hud) = makeModel()
+        audio.available[1] = device(2, name: "AirPods", transport: kAudioDeviceTransportTypeBluetooth)
+        audio.currentID = 2
+        await audio.emitChange()
+        XCTAssertEqual(audio.currentID, 1)
+        XCTAssertEqual(hud.shownNames, ["Device 1"])
+        XCTAssertTrue(model.automaticInputIsEnabled)
+    }
+
+    func testHUDPreferenceDefaultsOnAndPersistsWithoutChangingPriority() {
+        defaults.set(Data(#"{"isEnabled":true,"devices":[]}"#.utf8), forKey: InputPriorityStore.preferencesKey)
+        let store = InputPriorityStore(defaults: defaults)
+        XCTAssertTrue(store.showsHUD, "Existing installations keep HUD enabled")
+        store.setShowsHUD(false)
+        let restored = InputPriorityStore(defaults: defaults)
+        XCTAssertFalse(restored.showsHUD)
+        XCTAssertTrue(restored.isEnabled)
+        XCTAssertTrue(restored.devices.isEmpty)
+    }
+
+    func testDisabledHUDKeepsAutomaticRoutingAndDoesNotReplayOnEnable() async {
+        let (model, audio, hud) = makeModel()
+        model.setShowsHUD(false)
+        audio.available[1] = device(2, name: "AirPods", transport: kAudioDeviceTransportTypeBluetooth)
+        audio.currentID = 2
+        await audio.emitChange()
+        XCTAssertTrue(hud.shownNames.isEmpty)
+        XCTAssertEqual(audio.currentID, 1)
+        XCTAssertTrue(model.automaticInputIsEnabled)
+        model.setShowsHUD(true)
+        XCTAssertTrue(hud.shownNames.isEmpty)
+        audio.currentID = 3
+        await audio.emitChange()
+        XCTAssertEqual(hud.shownNames, ["Device 1"])
+        let dismissals = hud.dismissals
+        model.setShowsHUD(false)
+        XCTAssertGreaterThan(hud.dismissals, dismissals)
     }
 
     func testFallbackAndReconnectChooseHighestAvailable() async {
@@ -468,16 +612,17 @@ private final class FakeAudioManager: InputAudioManaging {
 
 @MainActor
 private final class FakeHUD: InputPriorityHUDPresenting {
+    var dismissals = 0
     var shownNames: [String] = []
     var disable: (() -> Void)?
     var enable: (() -> Void)?
     func show(
-        deviceName: String, detail: String, stackBelowNativeHUD: Bool, unlock: @escaping () -> Void,
+        deviceName: String, detail: String, unlock: @escaping () -> Void,
         lock: @escaping () -> Void
     ) {
         shownNames.append(deviceName)
         disable = unlock
         enable = lock
     }
-    func dismissForMenuOpening() {}
+    func dismissForMenuOpening() { dismissals += 1 }
 }

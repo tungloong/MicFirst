@@ -39,3 +39,7 @@
 "Offline devices leave the menu after 5 minutes. Manually hidden devices aren’t selected automatically." = "离线设备 5 分钟后从菜单收起。手动隐藏的设备不参与自动选择。";
 "Hidden devices are excluded from automatic selection." = "隐藏后不参与自动选择。";
 "Offline devices leave the menu after 5 minutes and return when connected, unless manually hidden." = "离线设备 5 分钟后从菜单收起，重新连接后恢复；手动隐藏的设备除外。";
+
+"MicFirst" = "MicFirst";
+
+"Show HUD Notifications" = "显示 HUD 提示";

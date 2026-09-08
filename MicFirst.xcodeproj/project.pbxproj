@@ -7,6 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0F0000010000000000000008 /* HUDAnchorTests.swift in Tests */ = {isa = PBXBuildFile; fileRef = 0F0000010000000000000018 /* HUDAnchorTests.swift */; };
+		0F0000010000000000000005 /* HUDDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0000010000000000000015 /* HUDDiagnostics.swift */; };
+		0F0000010000000000000007 /* HUDDiagnostics.swift in Tests */ = {isa = PBXBuildFile; fileRef = 0F0000010000000000000015 /* HUDDiagnostics.swift */; };
+		0F0000010000000000000004 /* NativeHUDProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0000010000000000000014 /* NativeHUDProbe.swift */; };
+		0F0000010000000000000006 /* NativeHUDProbe.swift in Tests */ = {isa = PBXBuildFile; fileRef = 0F0000010000000000000014 /* NativeHUDProbe.swift */; };
+		0F0000010000000000000002 /* StatusItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0000010000000000000012 /* StatusItemController.swift */; };
+		0F0000010000000000000003 /* HUDAnchor.swift in Tests */ = {isa = PBXBuildFile; fileRef = 0F0000010000000000000011 /* HUDAnchor.swift */; };
+		0F0000010000000000000001 /* HUDAnchor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0000010000000000000011 /* HUDAnchor.swift */; };
+		0E0000010000000000000001 /* HUDPlacement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E0000010000000000000011 /* HUDPlacement.swift */; };
+		0E0000010000000000000002 /* HUDPlacement.swift in Tests */ = {isa = PBXBuildFile; fileRef = 0E0000010000000000000011 /* HUDPlacement.swift */; };
 		0A0000010000000000000001 /* MicFirstApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0000010000000000000011 /* MicFirstApp.swift */; };
 		0A0000010000000000000002 /* SoundMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0000010000000000000012 /* SoundMenuView.swift */; };
 		0A0000010000000000000003 /* InputDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0000010000000000000013 /* InputDevice.swift */; };
@@ -30,6 +40,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0F0000010000000000000018 /* HUDAnchorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDAnchorTests.swift; sourceTree = "<group>"; };
+		0F0000010000000000000015 /* HUDDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDDiagnostics.swift; sourceTree = "<group>"; };
+		0F0000010000000000000014 /* NativeHUDProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeHUDProbe.swift; sourceTree = "<group>"; };
+		0F0000010000000000000012 /* StatusItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusItemController.swift; sourceTree = "<group>"; };
+		0F0000010000000000000011 /* HUDAnchor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDAnchor.swift; sourceTree = "<group>"; };
+		0E0000010000000000000011 /* HUDPlacement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDPlacement.swift; sourceTree = "<group>"; };
 		0A0000010000000000000010 /* MicFirst.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MicFirst.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A0000010000000000000011 /* MicFirstApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicFirstApp.swift; sourceTree = "<group>"; };
 		0A0000010000000000000012 /* SoundMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundMenuView.swift; sourceTree = "<group>"; };
@@ -80,6 +96,11 @@
 					0A0000010000000000000012 /* SoundMenuView.swift */,
 					0A0000010000000000000015 /* AudioInputViewModel.swift */,
 				0B0000010000000000000012 /* PreferredInputHUD.swift */,
+				0F0000010000000000000015 /* HUDDiagnostics.swift */,
+				0F0000010000000000000014 /* NativeHUDProbe.swift */,
+				0F0000010000000000000012 /* StatusItemController.swift */,
+				0F0000010000000000000011 /* HUDAnchor.swift */,
+				0E0000010000000000000011 /* HUDPlacement.swift */,
 				0B0000010000000000000011 /* InputPriorityStore.swift */,
 				0B0000010000000000000013 /* InputPriorityPreview.swift */,
 				0D0000010000000000000012 /* InputPrioritySettingsView.swift */,
@@ -105,7 +126,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		0C0000010000000000000030 /* MicFirstTests */ = {isa = PBXGroup; children = (0C0000010000000000000011 /* InputPriorityTests.swift */,); path = MicFirstTests; sourceTree = "<group>"; };
+		0C0000010000000000000030 /* MicFirstTests */ = {isa = PBXGroup; children = (0C0000010000000000000011 /* InputPriorityTests.swift */, 0F0000010000000000000018 /* HUDAnchorTests.swift */,); path = MicFirstTests; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -195,6 +216,11 @@
 					0A0000010000000000000002 /* SoundMenuView.swift in Sources */,
 					0A0000010000000000000005 /* AudioInputViewModel.swift in Sources */,
 				0B0000010000000000000002 /* PreferredInputHUD.swift in Sources */,
+				0F0000010000000000000005 /* HUDDiagnostics.swift in Sources */,
+				0F0000010000000000000004 /* NativeHUDProbe.swift in Sources */,
+				0F0000010000000000000002 /* StatusItemController.swift in Sources */,
+				0F0000010000000000000001 /* HUDAnchor.swift in Sources */,
+				0E0000010000000000000001 /* HUDPlacement.swift in Sources */,
 				0B0000010000000000000001 /* InputPriorityStore.swift in Sources */,
 				0B0000010000000000000003 /* InputPriorityPreview.swift in Sources */,
 				0D0000010000000000000002 /* InputPrioritySettingsView.swift in Sources */,
@@ -213,7 +239,12 @@
 				0C0000010000000000000003 /* InputPriorityStore.swift in Sources */,
 				0C0000010000000000000004 /* AudioInputViewModel.swift in Sources */,
 				0C0000010000000000000005 /* PreferredInputHUD.swift in Sources */,
+				0F0000010000000000000007 /* HUDDiagnostics.swift in Tests */,
+				0F0000010000000000000006 /* NativeHUDProbe.swift in Tests */,
+				0F0000010000000000000003 /* HUDAnchor.swift in Tests */,
+				0E0000010000000000000002 /* HUDPlacement.swift in Tests */,
 				0C0000010000000000000006 /* InputPriorityTests.swift in Sources */,
+				0F0000010000000000000008 /* HUDAnchorTests.swift in Tests */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

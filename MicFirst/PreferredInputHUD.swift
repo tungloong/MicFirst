@@ -1,21 +1,31 @@
 import AppKit
-import ApplicationServices
 import SwiftUI
 
 @MainActor
 protocol InputPriorityHUDPresenting: AnyObject {
-    func show(deviceName: String, detail: String, stackBelowNativeHUD: Bool, unlock: @escaping () -> Void, lock: @escaping () -> Void)
+    func show(deviceName: String, detail: String, unlock: @escaping () -> Void, lock: @escaping () -> Void)
     func dismissForMenuOpening()
 }
 
 @MainActor
 final class PreferredInputHUD: InputPriorityHUDPresenting {
     static let shared = PreferredInputHUD()
+    weak var anchorProvider: HUDAnchorProviding?
+    private(set) var systemMenuAnchors: [HUDSystemMenuAnchor] = []
 
-    private var panel: PreferredInputHUDPanel?
+    func updateSystemMenuAnchors(_ anchors: [HUDSystemMenuAnchor]) {
+        let valid = anchors.filter(\.isValid)
+        guard valid != systemMenuAnchors else { return }
+        systemMenuAnchors = valid
+        refreshPlacement()
+        #if DEBUG
+        HUDDiagnostics.shared.record(event: "system-menu-anchors-updated")
+        #endif
+    }
+
+    private var window: PreferredInputHUDWindow?
     private var hideWorkItem: DispatchWorkItem?
-    private var pendingShowWorkItem: DispatchWorkItem?
-    private var stackBelowNativeHUD = false
+    private let placement = HUDPlacement()
     private var isPointerInside = false
     private var unlockAction: (() -> Void)?
     private var lockAction: (() -> Void)?
@@ -23,14 +33,17 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
     private var globalMouseMonitor: Any?
 
     private enum Layout {
-        static let standaloneGapBelowMenuBar: CGFloat = 12
-        static let stackedGapBelowNativeCapsule: CGFloat = 5
-        static let screenEdgeInset: CGFloat = 6
-        static let topScreenEdgeInset: CGFloat = 0
+        // Calibrated against the supplied 2x native AirPods banner reference.
+        static let standaloneGapBelowMenuBar: CGFloat = 9
     }
 
     private enum Timing {
-        static let initialVisibleDuration: TimeInterval = 4.2
+        static var initialVisibleDuration: TimeInterval {
+            #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("--hud-preview") { return 60 }
+            #endif
+            return 4.2
+        }
         static let hoverExitVisibleDuration: TimeInterval = 0.8
         static let unlockConfirmationDuration: TimeInterval = 1.4
     }
@@ -38,28 +51,40 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
     func show(
         deviceName: String,
         detail: String,
-        stackBelowNativeHUD: Bool,
         unlock: @escaping () -> Void,
         lock: @escaping () -> Void
     ) {
-        pendingShowWorkItem?.cancel()
         hideWorkItem?.cancel()
-        self.stackBelowNativeHUD = stackBelowNativeHUD
+        #if DEBUG
+        HUDDiagnostics.shared.record(event: "hud-request")
+        #endif
         isPointerInside = false
         unlockAction = unlock
         lockAction = lock
 
-        let workItem = DispatchWorkItem { [weak self] in
-            self?.showNow(deviceName: deviceName, detail: detail)
-        }
-        pendingShowWorkItem = workItem
-
-        let delay: TimeInterval = stackBelowNativeHUD ? 0.18 : 0
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
+        showNow(deviceName: deviceName, detail: detail)
     }
 
     private func showNow(deviceName: String, detail: String) {
-        let panel = panel ?? makePanel()
+        guard let anchor = anchorProvider?.hudAnchor() else {
+            #if DEBUG
+            HUDDiagnostics.shared.record(event: "hud-skipped-anchor-unavailable")
+            #endif
+            hide()
+            return
+        }
+        let baseFrame = anchor.normalWindowFrame(
+            windowSize: PreferredInputHUDView.windowSize, capsuleSize: PreferredInputHUDView.capsuleSize,
+            gap: Layout.standaloneGapBelowMenuBar
+        )
+        guard let initialFrame = placement.frame(
+            anchoredAt: baseFrame, capsuleSize: PreferredInputHUDView.capsuleSize, on: anchor.screenFrame,
+            nativeAnchor: HUDSystemMenuAnchor.preferred(in: systemMenuAnchors, on: anchor.screenFrame)
+        ) else {
+            hide()
+            return
+        }
+        let window = window ?? makeWindow()
         let rootView = PreferredInputHUDView(
             deviceName: deviceName,
             detail: detail,
@@ -77,53 +102,66 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
             }
         )
 
-        panel.contentView = PreferredInputHUDHostingView(rootView: rootView)
-        panel.appearance = nil
-        panel.setFrame(frameForHUD(), display: true)
-        panel.ignoresMouseEvents = true
-        panel.alphaValue = 0
-        panel.orderFrontRegardless()
-        self.panel = panel
+        window.contentView = PreferredInputHUDContentView(rootView: rootView)
+        window.appearance = nil
+        window.setFrame(initialFrame, display: true)
+        window.ignoresMouseEvents = true
+        window.alphaValue = 0
+        window.orderFrontRegardless()
+        window.startGlassAppearance()
+        self.window = window
         startMouseTracking()
-        updatePanelMouseInteractivity()
+        updateWindowMouseInteractivity()
 
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.18
             context.timingFunction = CAMediaTimingFunction(name: .easeOut)
-            panel.animator().alphaValue = 1
+            window.animator().alphaValue = 1
         }
 
         scheduleHide(after: Timing.initialVisibleDuration)
+        #if DEBUG
+        HUDDiagnostics.shared.record(event: "hud-shown")
+        #endif
     }
 
     func dismissForMenuOpening() {
-        pendingShowWorkItem?.cancel()
-        pendingShowWorkItem = nil
         hide()
+    }
+
+    func anchorDidChange() {
+        refreshPlacement()
+        #if DEBUG
+        HUDDiagnostics.shared.record(event: "status-item-geometry-changed")
+        #endif
     }
 
     private func hide() {
         hideWorkItem?.cancel()
         hideWorkItem = nil
         stopMouseTracking()
+        window?.stopGlassAppearance()
+        #if DEBUG
+        HUDDiagnostics.shared.record(event: "hud-hide-requested")
+        #endif
 
-        guard let panel,
-              panel.isVisible else {
+        guard let window,
+              window.isVisible else {
             return
         }
 
-        panel.ignoresMouseEvents = true
+        window.ignoresMouseEvents = true
 
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.15
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-            panel.animator().alphaValue = 0
-        } completionHandler: { [weak panel] in
-            guard let panel,
-                  panel.alphaValue == 0 else {
+            window.animator().alphaValue = 0
+        } completionHandler: { [weak window] in
+            guard let window,
+                  window.alphaValue == 0 else {
                 return
             }
-            panel.orderOut(nil)
+            window.orderOut(nil)
         }
     }
 
@@ -133,7 +171,7 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
         localMouseMonitor = NSEvent.addLocalMonitorForEvents(
             matching: [.mouseMoved, .leftMouseDown, .rightMouseDown, .otherMouseDown, .leftMouseDragged]
         ) { [weak self] event in
-            self?.updatePanelMouseInteractivity()
+            self?.updateWindowMouseInteractivity()
             return event
         }
 
@@ -141,7 +179,7 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
             matching: [.mouseMoved, .leftMouseDown, .rightMouseDown, .otherMouseDown, .leftMouseDragged]
         ) { [weak self] _ in
             Task { @MainActor [weak self] in
-                self?.updatePanelMouseInteractivity()
+                self?.updateWindowMouseInteractivity()
             }
         }
     }
@@ -158,15 +196,15 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
         }
     }
 
-    private func updatePanelMouseInteractivity() {
-        guard let panel,
-              panel.isVisible else {
+    private func updateWindowMouseInteractivity() {
+        guard let window,
+              window.isVisible else {
             return
         }
 
-        let point = panel.convertPoint(fromScreen: NSEvent.mouseLocation)
+        let point = window.convertPoint(fromScreen: NSEvent.mouseLocation)
         let acceptsMouse = PreferredInputHUDView.interactiveFrame.contains(point)
-        panel.ignoresMouseEvents = !acceptsMouse
+        window.ignoresMouseEvents = !acceptsMouse
 
         if acceptsMouse {
             if !isPointerInside {
@@ -195,6 +233,7 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
 
     private func setPointerInside(_ isInside: Bool) {
         isPointerInside = isInside
+        if !isInside { refreshPlacement() }
 
         if isInside {
             hideWorkItem?.cancel()
@@ -220,242 +259,59 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
     }
 
-    private func makePanel() -> PreferredInputHUDPanel {
-        PreferredInputHUDPanel(contentSize: PreferredInputHUDView.windowSize)
+    private func makeWindow() -> PreferredInputHUDWindow {
+        PreferredInputHUDWindow(contentSize: PreferredInputHUDView.windowSize)
     }
 
-    private func frameForHUD() -> NSRect {
-        let screen = screenForHUD()
-        let screenFrame = screen.frame
-        let fallbackAnchor = NSRect(
-            x: screen.visibleFrame.maxX - 190,
-            y: screen.visibleFrame.maxY,
-            width: 32,
-            height: screenFrame.maxY - screen.visibleFrame.maxY
+    private func refreshPlacement() {
+        guard let window, window.isVisible else { return }
+        guard let anchor = anchorProvider?.hudAnchor() else { hide(); return }
+        let baseFrame = anchor.normalWindowFrame(
+            windowSize: PreferredInputHUDView.windowSize, capsuleSize: PreferredInputHUDView.capsuleSize,
+            gap: Layout.standaloneGapBelowMenuBar
         )
-
-        let anchor: NSRect
-        if stackBelowNativeHUD,
-           let nativeHUDFrame = nativeRouteHUDFrame(on: screenFrame) {
-            let nativeCapsuleFrame = nativeCapsuleFrame(from: nativeHUDFrame)
-            return frame(
-                capsuleMidX: nativeCapsuleFrame.midX,
-                capsuleTopY: nativeCapsuleFrame.minY - Layout.stackedGapBelowNativeCapsule,
-                on: screenFrame
-            )
-        } else {
-            anchor = statusItemFrame() ?? fallbackAnchor
+        guard let frame = placement.frame(
+            anchoredAt: baseFrame, capsuleSize: PreferredInputHUDView.capsuleSize, on: anchor.screenFrame,
+            nativeAnchor: HUDSystemMenuAnchor.preferred(in: systemMenuAnchors, on: anchor.screenFrame)
+        ) else {
+            hide()
+            return
         }
-
-        return frame(
-            capsuleMidX: anchor.midX,
-            capsuleTopY: screen.visibleFrame.maxY - Layout.standaloneGapBelowMenuBar,
-            on: screenFrame
-        )
+        if frame != window.frame {
+            window.setFrame(frame, display: true)
+            updateWindowMouseInteractivity()
+        }
     }
 
-    private func frame(capsuleMidX: CGFloat, capsuleTopY: CGFloat, on screenFrame: NSRect) -> NSRect {
-        let size = PreferredInputHUDView.windowSize
-        let visualFrame = PreferredInputHUDView.visualCapsuleFrame
-
-        var x = capsuleMidX - visualFrame.midX
-        var y = capsuleTopY - visualFrame.maxY
-
-        x = min(max(x, screenFrame.minX + Layout.screenEdgeInset), screenFrame.maxX - size.width - Layout.screenEdgeInset)
-        y = min(max(y, screenFrame.minY + Layout.screenEdgeInset), screenFrame.maxY - size.height - Layout.topScreenEdgeInset)
-
-        return NSRect(x: x, y: y, width: size.width, height: size.height)
-    }
-
-    private func nativeCapsuleFrame(from windowFrame: NSRect) -> NSRect {
-        let capsuleSize = PreferredInputHUDView.capsuleSize
-        let xInset = max((windowFrame.width - capsuleSize.width) / 2, 0)
-        let yInset = max((windowFrame.height - capsuleSize.height) / 2, 0)
-
-        return NSRect(
-            x: windowFrame.minX + xInset,
-            y: windowFrame.minY + yInset,
-            width: min(capsuleSize.width, windowFrame.width),
-            height: min(capsuleSize.height, windowFrame.height)
+    #if DEBUG
+    func diagnosticPresentation() -> HUDDiagnosticPresentation {
+        guard let window else {
+            return HUDDiagnosticPresentation(isVisible: false, hostFrame: nil, capsuleFrame: nil, alpha: 0)
+        }
+        return HUDDiagnosticPresentation(
+            isVisible: window.isVisible,
+            hostFrame: window.frame,
+            capsuleFrame: PreferredInputHUDView.visualCapsuleFrame.offsetBy(dx: window.frame.minX, dy: window.frame.minY),
+            alpha: window.alphaValue
         )
     }
+    #endif
 
-    private func screenForHUD() -> NSScreen {
-        if let statusItemFrame = statusItemFrame(),
-           let screen = NSScreen.screens.first(where: { $0.frame.insetBy(dx: -8, dy: -8).contains(NSPoint(x: statusItemFrame.midX, y: statusItemFrame.midY)) }) {
-            return screen
-        }
 
-        return NSScreen.main ?? NSScreen.screens.first ?? NSScreen()
-    }
-
-    private func nativeRouteHUDFrame(on screenFrame: NSRect) -> NSRect? {
-        guard let windows = CGWindowListCopyWindowInfo(.optionOnScreenOnly, kCGNullWindowID) as? [[String: Any]] else {
-            return nil
-        }
-
-        let frames = windows.compactMap { windowInfo -> NSRect? in
-            guard windowInfo[kCGWindowOwnerName as String] as? String == "Control Center",
-                  (windowInfo[kCGWindowName as String] as? String ?? "").isEmpty,
-                  let layer = windowInfo[kCGWindowLayer as String] as? NSNumber,
-                  layer.intValue >= 2000,
-                  let alpha = windowInfo[kCGWindowAlpha as String] as? NSNumber,
-                  alpha.doubleValue > 0.02,
-                  let bounds = windowInfo[kCGWindowBounds as String] as? [String: Any],
-                  let frame = Self.nsRect(fromCGWindowBounds: bounds),
-                  (260...560).contains(frame.width),
-                  (70...190).contains(frame.height),
-                  screenFrame.contains(NSPoint(x: frame.midX, y: frame.midY)) else {
-                return nil
-            }
-
-            return frame
-        }
-
-        return frames.min { $0.minY > $1.minY }
-    }
-
-    private func statusItemFrame() -> NSRect? {
-        statusItemFrameFromAccessibility() ?? statusItemFrameFromWindowList()
-    }
-
-    private func statusItemFrameFromAccessibility() -> NSRect? {
-        let appElement = AXUIElementCreateApplication(ProcessInfo.processInfo.processIdentifier)
-        var menuBarValue: CFTypeRef?
-
-        guard AXUIElementCopyAttributeValue(appElement, kAXExtrasMenuBarAttribute as CFString, &menuBarValue) == .success,
-              let menuBarValue,
-              CFGetTypeID(menuBarValue) == AXUIElementGetTypeID() else {
-            return nil
-        }
-
-        var childrenValue: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(menuBarValue as! AXUIElement, kAXChildrenAttribute as CFString, &childrenValue) == .success,
-              let children = childrenValue as? [AXUIElement],
-              !children.isEmpty else {
-            return nil
-        }
-
-        let preferredTitles = [
-            String(localized: "Sound"),
-            "Sound",
-            "MicFirst",
-            "MenuBarIconLocked",
-            "MenuBarIcon",
-            "music.microphone"
-        ]
-        let child = children.first {
-            let title = axString($0, attribute: kAXTitleAttribute as CFString)
-            let description = axString($0, attribute: kAXDescriptionAttribute as CFString)
-            return preferredTitles.contains { title == $0 || description == $0 }
-        } ?? children[0]
-
-        guard let frame = axFrame(child),
-              isStatusItemFrame(frame) else {
-            return nil
-        }
-
-        return frame
-    }
-
-    private func statusItemFrameFromWindowList() -> NSRect? {
-        guard let bundleIdentifier = Bundle.main.bundleIdentifier,
-              let windows = CGWindowListCopyWindowInfo(.optionOnScreenOnly, kCGNullWindowID) as? [[String: Any]] else {
-            return nil
-        }
-
-        return windows.compactMap { windowInfo -> NSRect? in
-            guard windowInfo[kCGWindowOwnerName as String] as? String == "Control Center",
-                  windowInfo[kCGWindowName as String] as? String == bundleIdentifier,
-                  let bounds = windowInfo[kCGWindowBounds as String] as? [String: Any] else {
-                return nil
-            }
-
-            return Self.nsRect(fromCGWindowBounds: bounds)
-        }
-        .first(where: isStatusItemFrame)
-    }
-
-    private func axString(_ element: AXUIElement, attribute: CFString) -> String? {
-        var value: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(element, attribute, &value) == .success else {
-            return nil
-        }
-        return value as? String
-    }
-
-    private func axFrame(_ element: AXUIElement) -> NSRect? {
-        var positionValue: CFTypeRef?
-        var sizeValue: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(element, kAXPositionAttribute as CFString, &positionValue) == .success,
-              AXUIElementCopyAttributeValue(element, kAXSizeAttribute as CFString, &sizeValue) == .success,
-              let positionValue,
-              let sizeValue,
-              CFGetTypeID(positionValue) == AXValueGetTypeID(),
-              CFGetTypeID(sizeValue) == AXValueGetTypeID() else {
-            return nil
-        }
-
-        var position = CGPoint.zero
-        var size = CGSize.zero
-        guard AXValueGetValue(positionValue as! AXValue, .cgPoint, &position),
-              AXValueGetValue(sizeValue as! AXValue, .cgSize, &size) else {
-            return nil
-        }
-
-        return Self.nsRect(fromTopLeftX: position.x, y: position.y, width: size.width, height: size.height)
-    }
-
-    private func isStatusItemFrame(_ frame: NSRect) -> Bool {
-        guard frame.width > 0,
-              frame.height > 0 else {
-            return false
-        }
-
-        let center = NSPoint(x: frame.midX, y: frame.midY)
-        return NSScreen.screens.contains { screen in
-            screen.frame.insetBy(dx: -8, dy: -8).contains(center)
-                && frame.maxY > screen.frame.maxY - 90
-                && frame.minY <= screen.frame.maxY + 8
-        }
-    }
-
-    private static func nsRect(fromCGWindowBounds bounds: [String: Any]) -> NSRect? {
-        guard let x = cgFloat(bounds["X"]),
-              let y = cgFloat(bounds["Y"]),
-              let width = cgFloat(bounds["Width"]),
-              let height = cgFloat(bounds["Height"]) else {
-            return nil
-        }
-
-        return nsRect(fromTopLeftX: x, y: y, width: width, height: height)
-    }
-
-    private static func nsRect(fromTopLeftX x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat) -> NSRect {
-        let primaryScreenMaxY = NSScreen.screens.first(where: { $0.frame.origin == .zero })?.frame.maxY
-            ?? NSScreen.screens.map(\.frame.maxY).max()
-            ?? 0
-        return NSRect(x: x, y: primaryScreenMaxY - y - height, width: width, height: height)
-    }
-
-    private static func cgFloat(_ value: Any?) -> CGFloat? {
-        if let number = value as? NSNumber {
-            return CGFloat(truncating: number)
-        }
-
-        if let value = value as? CGFloat {
-            return value
-        }
-
-        return nil
-    }
 }
 
-private final class PreferredInputHUDPanel: NSPanel {
+// A nonactivating NSPanel cannot safely carry the process-local key appearance
+// claim: BetterNotch's integration found that it disrupted other apps' focus.
+// Keep a plain NSWindow that refuses actual key/main status instead.
+private final class PreferredInputHUDWindow: NSWindow {
+    private lazy var glassAppearance = HUDGlassAppearanceSession { [weak self] in
+        self?.assertGlassAppearance()
+    }
+
     init(contentSize: NSSize) {
         super.init(
             contentRect: NSRect(origin: .zero, size: contentSize),
-            styleMask: [.borderless, .nonactivatingPanel],
+            styleMask: [.borderless],
             backing: .buffered,
             defer: false
         )
@@ -463,7 +319,8 @@ private final class PreferredInputHUDPanel: NSPanel {
         isOpaque = false
         backgroundColor = .clear
         hasShadow = false
-        level = .statusBar
+        // Keep the HUD above ordinary pop-up menus without acquiring focus.
+        level = NSWindow.Level(rawValue: NSWindow.Level.popUpMenu.rawValue + 1)
         collectionBehavior = [
             .canJoinAllSpaces,
             .fullScreenAuxiliary,
@@ -474,16 +331,100 @@ private final class PreferredInputHUDPanel: NSPanel {
         hidesOnDeactivate = false
         ignoresMouseEvents = false
         animationBehavior = .none
+        isReleasedWhenClosed = false
     }
 
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
+
+    func startGlassAppearance() {
+        guard #available(macOS 26.0, *) else { return }
+        glassAppearance.start()
+    }
+
+    func stopGlassAppearance() {
+        glassAppearance.stop()
+    }
+
+    private func assertGlassAppearance() {
+        guard isVisible else { return }
+        // Public symbols used outside Apple's recommended calling pattern:
+        // this remains a local appearance hint, never actual key/main focus.
+        becomeKey()
+        NotificationCenter.default.post(name: NSWindow.didBecomeKeyNotification, object: self)
+    }
+
+    override func orderOut(_ sender: Any?) {
+        stopGlassAppearance()
+        super.orderOut(sender)
+    }
+
+    override func close() {
+        stopGlassAppearance()
+        super.close()
+    }
+}
+
+/// Refresh only around presentation and app activation changes. No periodic timer.
+@MainActor
+final class HUDGlassAppearanceSession {
+    private let assertAppearance: () -> Void
+    private let notificationCenter: NotificationCenter
+    private var isActive = false
+    private var observers: [NSObjectProtocol] = []
+    private var burst: Task<Void, Never>?
+
+    init(
+        notificationCenter: NotificationCenter = NSWorkspace.shared.notificationCenter,
+        assertAppearance: @escaping () -> Void
+    ) {
+        self.notificationCenter = notificationCenter
+        self.assertAppearance = assertAppearance
+    }
+
+    deinit {
+        burst?.cancel()
+        observers.forEach(notificationCenter.removeObserver)
+    }
+
+    func start() {
+        if !isActive {
+            isActive = true
+            for name in [NSWorkspace.didActivateApplicationNotification, NSWorkspace.didDeactivateApplicationNotification] {
+                observers.append(notificationCenter.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                    MainActor.assumeIsolated { self?.refresh() }
+                })
+            }
+        }
+        // Also refresh when an already-visible HUD receives a new hosting view.
+        refresh()
+    }
+
+    func stop() {
+        isActive = false
+        burst?.cancel()
+        burst = nil
+        observers.forEach(notificationCenter.removeObserver)
+        observers.removeAll()
+    }
+
+    private func refresh() {
+        guard isActive else { return }
+        burst?.cancel()
+        burst = Task { @MainActor [weak self] in
+            // Let SwiftUI attach, then keep the original bounded 360 ms burst.
+            for _ in 0..<18 {
+                try? await Task.sleep(nanoseconds: 20_000_000)
+                guard !Task.isCancelled else { return }
+                self?.assertAppearance()
+            }
+        }
+    }
 }
 
 private struct PreferredInputHUDView: View {
     static let windowSize = NSSize(width: 360, height: 136)
     static let capsuleSize = CGSize(width: 235, height: 52)
-    static let glassButtonLabelSize = CGSize(width: 225, height: 44)
     static let hudIconSize: CGFloat = 34
     static let textColumnWidth: CGFloat = 128
     static let contentLeadingInset: CGFloat = 15
@@ -530,7 +471,7 @@ private struct PreferredInputHUDView: View {
     private var capsule: some View {
         if #available(macOS 26.0, *) {
             ZStack {
-                glassButtonCapsule
+                glassCapsule
                     .allowsHitTesting(false)
                     .accessibilityHidden(true)
 
@@ -538,9 +479,6 @@ private struct PreferredInputHUDView: View {
                     .frame(width: Self.capsuleSize.width, height: Self.capsuleSize.height)
             }
             .frame(width: Self.capsuleSize.width, height: Self.capsuleSize.height)
-            .overlay {
-                capsuleRimHighlight
-            }
             .contentShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
             .overlay(alignment: .topLeading) {
                 closeButton
@@ -624,54 +562,18 @@ private struct PreferredInputHUDView: View {
         .accessibilityLabel(isUnlocked ? Text("Enable Input Priority") : Text("Disable Input Priority"))
     }
 
-    private var capsuleRimHighlight: some View {
-        ZStack {
-            Capsule(style: .continuous)
-                .stroke(Color.white.opacity(isDark ? 0.26 : 0.58), lineWidth: 1.05)
-                .blur(radius: 0.35)
-                .offset(y: -0.2)
-
-            Capsule(style: .continuous)
-                .strokeBorder(capsuleRimGradient, lineWidth: isDark ? 0.95 : 1.05)
-
-            Capsule(style: .continuous)
-                .inset(by: 1.15)
-                .strokeBorder(Color.white.opacity(isDark ? 0.12 : 0.32), lineWidth: 0.55)
-        }
-        .allowsHitTesting(false)
-    }
-
-    private var capsuleRimGradient: LinearGradient {
-        LinearGradient(
-            colors: isDark
-                ? [
-                    Color.white.opacity(0.42),
-                    Color.white.opacity(0.24),
-                    Color.white.opacity(0.10),
-                    Color.black.opacity(0.16)
-                ]
-                : [
-                    Color.white.opacity(0.96),
-                    Color.white.opacity(0.82),
-                    Color.white.opacity(0.34),
-                    Color.black.opacity(0.07)
-                ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
-
     @available(macOS 26.0, *)
-    private var glassButtonCapsule: some View {
-        Button(action: {}) {
-            Color.clear
-                .frame(width: Self.glassButtonLabelSize.width, height: Self.glassButtonLabelSize.height)
+    private var glassCapsule: some View {
+        let shape = Capsule(style: .continuous)
+
+        // Keep the material on its own shape, with HUD content as a sibling.
+        // System glass supplies the refraction, edge highlights, and shadow.
+        return GlassEffectContainer {
+            shape
+                .fill(.clear)
+                .glassEffect(.clear.interactive(false), in: shape)
+                .frame(width: Self.capsuleSize.width, height: Self.capsuleSize.height)
         }
-        .buttonStyle(.glass)
-        .buttonBorderShape(.capsule)
-        .frame(width: Self.capsuleSize.width, height: Self.capsuleSize.height)
-        .shadow(color: Color.black.opacity(isDark ? 0.26 : 0.10), radius: isDark ? 8 : 6.5, x: 0, y: isDark ? 5 : 3.5)
-        .shadow(color: Color.black.opacity(isDark ? 0.14 : 0.055), radius: 1.6, x: 0, y: 0.8)
     }
 
     private func toggleLockState() {
@@ -696,11 +598,11 @@ private struct PreferredInputHUDView: View {
             Button(action: close) {
                 ZStack {
                     Circle()
-                        .fill(Color(nsColor: .labelColor).opacity(isDark ? 0.18 : 0.10))
+                        .fill(Color(nsColor: .windowBackgroundColor))
 
                     Image(systemName: "xmark")
                         .font(.system(size: 8.5, weight: .semibold))
-                        .foregroundStyle(Color(nsColor: .secondaryLabelColor))
+                        .foregroundStyle(Color(nsColor: .labelColor))
                 }
                 .frame(width: 18, height: 18)
                 .contentShape(Circle())
@@ -717,7 +619,7 @@ private struct PreferredInputHUDView: View {
             return Color(nsColor: .labelColor).opacity(isDark ? 0.18 : 0.115)
         }
 
-        return Color(nsColor: .systemBrown)
+        return .accentColor
     }
 
     private var lockButtonForeground: Color {
@@ -856,6 +758,36 @@ private struct PreferredInputHUDIcon: View {
         .frame(width: size, height: size)
         .compositingGroup()
         .shadow(color: .black.opacity(0.14), radius: 1.4, x: 0.35, y: 0.9)
+    }
+}
+
+/// Approved readability recipe: an active Popover material at 0.80 behind the
+/// untinted clear glass. Keep the foreground outside both background effects.
+private final class PreferredInputHUDContentView: NSView {
+    init(rootView: PreferredInputHUDView) {
+        super.init(frame: NSRect(origin: .zero, size: PreferredInputHUDView.windowSize))
+        if #available(macOS 26.0, *) {
+            let backdrop = NSVisualEffectView(frame: PreferredInputHUDView.visualCapsuleFrame)
+            backdrop.material = .popover
+            backdrop.blendingMode = .behindWindow
+            backdrop.state = .active
+            backdrop.alphaValue = 0.80
+            backdrop.wantsLayer = true
+            backdrop.layer?.cornerRadius = PreferredInputHUDView.capsuleSize.height / 2
+            backdrop.layer?.masksToBounds = true
+            addSubview(backdrop)
+        }
+        addSubview(PreferredInputHUDHostingView(rootView: rootView))
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    override var isOpaque: Bool { false }
+
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        guard PreferredInputHUDView.interactiveFrame.contains(point) else { return nil }
+        return super.hitTest(point)
     }
 }
 

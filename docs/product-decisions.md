@@ -36,3 +36,12 @@ user-controlled priorities and stable input selection.
 The [research](multi-input-research.md) is retained as background, not as a task
 list or committed roadmap. There is no scheduled restart; revisit only after
 an explicit product decision.
+
+## 2026-09-08 — HUD readability recipe accepted
+
+Keep untinted `.clear` Liquid Glass over a capsule-clipped Popover background
+material at 0.80 opacity. Retain presentation/app-switch appearance bursts and
+omit the recurring one-second appearance timer. Retire the temporary tint and
+background-material controls. This closes the material exploration; exact system
+AirPods rendering is not a requirement for this accepted recipe. See
+[current HUD behavior](input-priority.md) for implementation and integration limits.

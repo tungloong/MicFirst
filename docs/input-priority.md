@@ -29,8 +29,81 @@ The menu uses a single list-wide hover state for its drag handles. Reordering a
 filtered menu permutes only its visible slots; omitted devices retain their full-list
 positions. A change to the displayed UIDs cancels an in-progress drag.
 
-There is no pause, five-second countdown, or timed resume. The HUD's lock-shaped
+Automatic input has no pause, countdown, or timed resume. The HUD's lock-shaped
 button now controls the same global mode and never changes priority order.
+
+On macOS 26+, the HUD capsule is a clear-filled SwiftUI shape with
+`glassEffect(.clear.interactive(false), in:)` inside one `GlassEffectContainer`.
+Behind the SwiftUI glass, the hosting container adds an `NSVisualEffectView`
+with `.popover` material, `.behindWindow` blending, `.active` state, and
+`alphaValue = 0.80`, clipped to the 235×52 pt capsule. This is the user-approved
+readability recipe from September 8. Text and controls sit above both effects.
+The glass has no tint, extra rim strokes, or custom capsule shadows; the system
+renders its edges and refraction. macOS 13–15 retains the existing fallback.
+The enabled priority button uses the system accent color. The hover-only close
+button uses an opaque system window background and primary label color so its
+contrast does not depend on the content behind the glass.
+
+The menu uses the system SwiftUI `MenuBarExtra` with `.window` style again.
+The intermediary `NSPopover` and attempted custom `NSPanel` were removed.
+SwiftUI owns the native menu chrome and outside-click dismissal; existing menu
+controls and Settings continue using their native SwiftUI environment. Opening
+the menu dismisses the HUD via the menu content's appearance callback.
+
+In the current sandboxed development build, the startup public-AX helper also
+reads MicFirst's `micfirst-status-item` rectangle. `StatusItemController` now
+only provides this snapshot to the HUD; it creates no menu window or status item.
+All button positions refresh on launch, so rearranging MicFirst's icon also
+requires a relaunch. An unavailable own anchor suppresses HUD presentation.
+
+The HUD prefers the center of MicFirst's own menu-bar button, with its capsule
+9 pt below the menu bar. Horizontal avoidance reserves a predicted 235×52 pt
+native capsule under Sound, falling back to Control Center on the same display.
+The native region is reserved regardless of whether Apple's HUD is currently
+visible. Both capsules are clamped inside the screen before testing overlap.
+
+If the own capsule is already separated by at least 12 pt, it stays at its own
+anchor. Otherwise it moves to the native region's right if the entire capsule
+fits, or to its left if that fits. If neither side fits, skip the notification;
+never move it to a lower row. Missing/invalid system coordinates fall back to the
+own anchor without claiming collision protection. No five-second delay remains:
+confirmed restoration notifications appear immediately. Route verification and
+the normal 4.2-second visible duration/hover behavior remain unchanged.
+
+Settings includes **Show HUD Notifications**, enabled by default for both new and
+existing installations. It persists in `inputPriorityPreferences.v1` independently
+of automatic input. Turning it off dismisses visible HUDs; turning it back on does
+not replay old events.
+
+**Current integration is a Debug startup snapshot.** `build-and-run.sh` invokes
+an external public-Accessibility helper once per launch/relaunch. It reads
+Sound/Control Center and MicFirst menu geometry once after launch, delivers
+validated JSON through a one-shot notification, and exits. The app retains that snapshot for the process lifetime;
+there is no background coordinate helper, periodic refresh, notification feed,
+or expiration timer. Move/hide a system button or change displays, then relaunch
+through the script to refresh the snapshot. The own icon also uses the startup snapshot. No entitlement, private API, or permission prompt was added;
+the helper needs an already-authorized Accessibility execution context.
+
+A standalone app launch without the helper, and the Release target, currently
+lack the own-button snapshot and therefore suppress HUD presentation. A supported production helper/permission architecture
+is still an explicit follow-up decision; don't represent the development bridge
+as production AX access from a sandboxed app. See [native HUD investigation](native-hud-investigation.md)
+for the closed native-visibility experiments.
+
+The HUD uses a borderless `NSWindow` at `NSWindow.Level.popUpMenu + 1`, above
+ordinary pop-up menus, and refuses actual key/main status. On macOS 26+, each
+presentation/hosting-view replacement and each foreground-app activation or
+deactivation triggers a bounded appearance burst: 18 refreshes spaced 20 ms
+apart (approximately 360 ms). Each refresh calls `becomeKey()` and posts
+`didBecomeKeyNotification` as a process-local glass appearance hint. These are
+public symbols used outside Apple's recommended calling pattern; the HUD never
+calls `makeKeyWindow()` or activates the app.
+
+Only the recurring one-second appearance timer has been removed. The visible-only
+app-change observers, bounded bursts, and `HUDGlassAppearanceSession` remain.
+An idle HUD does no appearance maintenance after its burst finishes. Hiding or
+closing the HUD cancels the burst and removes observers; releasing the session
+also cleans up its work. The ordinary dismiss/hover timers still control duration.
 
 ## Persistence and migration
 
@@ -62,6 +135,10 @@ names receive a USB/Bluetooth suffix in the menu; original device names are reta
 - `InputPrioritySettingsView.swift`: native Settings scene content, device controls, and Settings entry point.
 - `ReorderableInputList.swift`: shared UID-based drag behavior, scroll handling, and hover visibility.
 - `PreferredInputHUD.swift`: the existing glass HUD and its presentation lifecycle.
+- `HUDPlacement.swift`: horizontal collision avoidance and visible-capsule screen clamping.
+- `StatusItemController.swift` / `HUDAnchor.swift`: startup menu-button anchor validation and HUD geometry.
+- `NativeHUDProbe.swift` / `HUDDiagnostics.swift`: read-only candidate evidence and
+  opt-in, time-bounded Debug logging; no verified native visibility channel yet.
 - `InputPriorityPreview.swift`: Debug-only simulated UI; no system audio writes.
 
 Volume echo suppression only affects the slider; it never discards route or
@@ -83,6 +160,42 @@ the global switch, Settings, and offline deletion. Preview preferences are isola
 For an already-expired offline device, launch the Debug app with
 `--priority-preview --expired-offline`; add `--many-inputs` to exercise scrolling.
 `./scripts/build-and-run.sh` returns to the regular menu bar utility.
+
+Use `./scripts/build-and-run.sh --hud-preview` to show the finalized real HUD
+with simulated devices and isolated preferences. Its initial timeout is extended
+to 60 seconds; close, buttons, and hover exit retain their usual behavior. This
+preview requires Debug and uses the same clear + Popover 0.80 recipe as normal
+presentation. The tint/material lab, its sliders and A–E comparison, the glass
+layer toggle, and the `--tint-preview` / `--flat-glass` launch options are retired.
+
+To review the actual HUD while using the isolated preview, run:
+
+```sh
+swift -e 'import Foundation; DistributedNotificationCenter.default().postNotificationName(Notification.Name("MicFirst.ShowPreferredInputHUD"), object: nil, userInfo: nil, deliverImmediately: true); RunLoop.current.run(until: Date().addingTimeInterval(0.2))'
+```
+
+This Debug-only trigger uses the preview's simulated current device. The HUD
+keeps its normal lifetime and hover behavior; its priority button operates on
+the isolated preview model.
+
+Validated on 2026-09-07 for the HUD material/window update:
+
+- The comparison with identically configured `.clear` windows returned to a gray/frosted appearance with
+  `--flat-glass` and reduced that wash with appearance maintenance enabled.
+- A pointer click on the HUD's priority button disabled the simulated mode.
+- Timed observations in a separate Sublime Text document accepted input and kept
+  a context menu open across the one-second maintenance interval. Each observation
+  was kept in a single UI-control call to avoid intervening foreground changes.
+- A debugger snapshot while the HUD was visible reported `NSApp.keyWindow == nil`.
+- Historical hostless appearance-session tests covered stopping work after dismissal, reuse,
+  and releasing a session with pending work. These do not prove rendering or
+  cross-application focus behavior on other macOS versions.
+- All 35 hostless tests and Debug / universal Release (arm64 + x86_64) builds
+  passed without warnings.
+
+The material comparison used captured window images, not a frame-by-frame
+desktop recording. Exact parity with Apple's AirPods HUD and physical
+multi-display/wake behavior have not been established by this check.
 
 Real-device testing remains necessary for firmware-specific USB/Bluetooth routing
 and physical reconnect timing. The app continues to target macOS 13; the test

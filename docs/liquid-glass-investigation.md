@@ -6,6 +6,31 @@ Project: `AudioInputLocker`
 > Historical note: this document records an earlier HUD investigation and may
 > mention experiments that have since been removed or replaced.
 
+> 2026-09-07 update: MicFirst's production HUD now uses a clear-filled SwiftUI
+> capsule with `.glassEffect(.clear.interactive(false), in:)` inside
+> `GlassEffectContainer`. It replaces an empty `.glass` button and removes
+> the added rim highlights and capsule shadows. No tint is applied. The
+> AppKit and Lab implementations described below are historical; see
+> [current HUD behavior and preview instructions](input-priority.md).
+>
+> Follow-up: matching the SwiftUI modifier alone was incomplete. The HUD now
+> uses a plain `NSWindow` with event-triggered key-appearance bursts based on
+> BetterNotch's experiments. A Debug comparison with identical window configuration and that maintenance
+> disabled restores the frosted appearance. The current implementation's calling
+> pattern, focus checks, and validation limits are documented in the link above.
+
+## Accepted MicFirst recipe — September 8, 2026
+
+The readability exploration is closed. The user selected untinted SwiftUI
+`.clear.interactive(false)` in `GlassEffectContainer`, over a capsule-clipped
+`NSVisualEffectView` using `.popover`, `.behindWindow`, `.active`, and alpha 0.80.
+The actual HUD now uses that stack. Intermediate material alpha reduces background
+text contrast; it is not a public blur-radius control or a claim of exact AirPods
+parity. The tint/material lab, its controls, test strings and launch flags were
+removed. Temporary desktop comparison captures were cleared after verification.
+Current behavior and supported previews live in [input-priority.md](input-priority.md).
+The investigations and alternative recipes below are historical reference only.
+
 ## Purpose
 
 This document summarizes an unresolved visual issue in a macOS menu bar app: reproducing a small native-looking AirPods-style HUD using macOS 26 Liquid Glass.
@@ -734,3 +759,13 @@ Recommended cross-check focus:
 - Verify whether public APIs are indeed limited to `regular` and `clear`.
 - Verify whether there is an endorsed public route for Control Center / AirPods HUD material.
 - Verify whether private `NSGlassEffectView` properties map to system Liquid Glass variants and whether any are viable for self-use tools.
+
+## September 8: remove only the recurring one-second timer
+
+The user clarified that presentation and app-switch appearance support must remain.
+`HUDGlassAppearanceSession` therefore retains visible-only activation/deactivation
+observers and the 18×20 ms (approximately 360 ms) bounded refresh burst. Only the
+recurring one-second timer is removed. An idle HUD receives no appearance refreshes
+after the burst ends. Dismissal/release still cancels tasks and removes observers.
+The brief one-time-only implementation was superseded by this correction.
+Earlier measurements that mention one-second maintenance describe the old version.

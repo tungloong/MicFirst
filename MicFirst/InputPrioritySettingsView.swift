@@ -45,6 +45,20 @@ struct InputPrioritySettingsView: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
+            Divider()
+
+            HStack {
+                Text("Show HUD Notifications")
+                Spacer()
+                Toggle("Show HUD Notifications", isOn: Binding(
+                    get: { viewModel.showsHUD }, set: viewModel.setShowsHUD
+                ))
+                .labelsHidden()
+                .toggleStyle(.switch)
+                .controlSize(.small)
+                .accessibilityIdentifier("settings-hud-toggle")
+            }
+
             if let errorMessage = viewModel.errorMessage {
                 Text(errorMessage).font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

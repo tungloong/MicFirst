@@ -9,6 +9,7 @@ final class AudioInputViewModel: ObservableObject {
     @Published private(set) var priorityRows: [InputPriorityRow] = []
     @Published private(set) var menuRows: [InputPriorityRow] = []
     @Published private(set) var automaticInputIsEnabled: Bool
+    @Published private(set) var showsHUD: Bool
     @Published private(set) var currentVolume: Double = 0
     @Published private(set) var volumeIsEnabled = false
     @Published private(set) var errorMessage: String?
@@ -20,7 +21,6 @@ final class AudioInputViewModel: ObservableObject {
     private struct Restoration {
         let token = UUID()
         let uid: String
-        let stackBelowNativeHUD: Bool
         let shouldNotify: Bool
         var attempts = 0
     }
@@ -47,6 +47,7 @@ final class AudioInputViewModel: ObservableObject {
         self.audioManager = audioManager
         self.preferences = preferences
         self.hud = hud ?? PreferredInputHUD.shared
+        showsHUD = preferences.showsHUD
         automaticInputIsEnabled = preferences.isEnabled
         refresh(shouldNotify: false)
         audioManager.startMonitoring { [weak self] in
@@ -73,6 +74,7 @@ final class AudioInputViewModel: ObservableObject {
     }
 
     func settingsDidOpen() {
+        hud.dismissForMenuOpening()
         refresh(shouldNotify: false)
     }
 
@@ -94,6 +96,14 @@ final class AudioInputViewModel: ObservableObject {
             }
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+
+    func setShowsHUD(_ value: Bool) {
+        showsHUD = value
+        preferences.setShowsHUD(value)
+        if !value {
+            hud.dismissForMenuOpening()
         }
     }
 
@@ -185,6 +195,9 @@ final class AudioInputViewModel: ObservableObject {
     private func applyLoadedDevices(_ loadedDevices: [InputDevice]) {
         let previousUID = currentDevice?.uid
         devices = loadedDevices
+        if previousUID != currentDevice?.uid {
+            hud.dismissForMenuOpening()
+        }
         preferences.observe(loadedDevices)
         updatePriorityRows()
         if let current = currentDevice {
@@ -230,7 +243,6 @@ final class AudioInputViewModel: ObservableObject {
         cancelRestoration()
         restoration = Restoration(
             uid: target.uid,
-            stackBelowNativeHUD: currentDevice?.mayTriggerNativeRouteHUD ?? false,
             shouldNotify: shouldNotify
         )
         attemptRestoration()
@@ -287,7 +299,10 @@ final class AudioInputViewModel: ObservableObject {
         guard pending?.uid == device.uid else { return }
         errorMessage = nil
         guard pending?.shouldNotify == true else { return }
-        showRestorationHUD(for: device, stackBelowNativeHUD: pending?.stackBelowNativeHUD ?? false)
+        #if DEBUG
+        HUDDiagnostics.shared.record(event: "automatic-restoration-confirmed")
+        #endif
+        showRestorationHUD(for: device)
     }
 
     private func cancelRestoration() {
@@ -296,17 +311,27 @@ final class AudioInputViewModel: ObservableObject {
         restoration = nil
     }
 
-    private func showRestorationHUD(for device: InputDevice, stackBelowNativeHUD: Bool) {
+    private func showRestorationHUD(for device: InputDevice) {
+        guard showsHUD, automaticInputIsEnabled,
+              let latest = try? audioManager.loadInputDevices(),
+              let current = latest.first(where: { $0.isDefault && $0.uid == device.uid }),
+              preferences.preferredDevice(in: latest)?.uid == current.uid else { return }
+        presentRestorationHUD(for: current)
+    }
+
+    private func presentRestorationHUD(for device: InputDevice) {
         hud.show(
             deviceName: priorityRows.first(where: { $0.id == device.uid })?.name ?? device.displayName,
             detail: NSLocalizedString("Input Priority On", comment: "HUD automatic input status"),
-            stackBelowNativeHUD: stackBelowNativeHUD,
             unlock: { [weak self] in self?.setAutomaticInputEnabled(false) },
             lock: { [weak self] in
                 guard let self else { return }
                 self.setAutomaticInputEnabled(true)
                 if let preferred = self.preferences.preferredDevice(in: self.devices), preferred.isDefault {
-                    self.showRestorationHUD(for: preferred, stackBelowNativeHUD: false)
+                    #if DEBUG
+                    HUDDiagnostics.shared.record(event: "hud-enable-confirmed")
+                    #endif
+                    self.showRestorationHUD(for: preferred)
                 } else {
                     self.hud.dismissForMenuOpening()
                 }
@@ -315,13 +340,18 @@ final class AudioInputViewModel: ObservableObject {
     }
 
     #if DEBUG
+        func showHUDPreview() {
+            guard let device = currentDevice else { return }
+            HUDDiagnostics.shared.record(event: "debug-preview-request")
+            showRestorationHUD(for: device)
+        }
+
         private func installDebugHUDTrigger() {
             debugHUDObserver = DistributedNotificationCenter.default().addObserver(
                 forName: Notification.Name("MicFirst.ShowPreferredInputHUD"), object: nil, queue: .main
             ) { [weak self] _ in
                 Task { @MainActor [weak self] in
-                    guard let self, let device = self.currentDevice else { return }
-                    self.showRestorationHUD(for: device, stackBelowNativeHUD: false)
+                    self?.showHUDPreview()
                 }
             }
         }

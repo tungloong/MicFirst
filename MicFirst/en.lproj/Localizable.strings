@@ -39,3 +39,7 @@
 "Offline devices leave the menu after 5 minutes. Manually hidden devices aren’t selected automatically." = "Offline devices leave the menu after 5 minutes. Manually hidden devices aren’t selected automatically.";
 "Hidden devices are excluded from automatic selection." = "Hidden devices are excluded from automatic selection.";
 "Offline devices leave the menu after 5 minutes and return when connected, unless manually hidden." = "Offline devices leave the menu after 5 minutes and return when connected, unless manually hidden.";
+
+"MicFirst" = "MicFirst";
+
+"Show HUD Notifications" = "Show HUD Notifications";

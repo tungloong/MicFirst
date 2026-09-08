@@ -9,6 +9,10 @@
         private static var window: NSWindow?
 
         static func showWindow(viewModel: AudioInputViewModel) {
+            if ProcessInfo.processInfo.arguments.contains("--hud-preview") {
+                viewModel.showHUDPreview()
+                return
+            }
             let view = NSHostingView(rootView: SoundMenuView(viewModel: viewModel).background(.regularMaterial))
             let preview = NSWindow(
                 contentRect: NSRect(origin: .zero, size: view.fittingSize),

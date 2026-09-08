@@ -67,6 +67,7 @@ final class InputPriorityStore {
     private struct Preferences: Codable {
         var isEnabled: Bool
         var devices: [RememberedInputDevice]
+        var showsHUD: Bool? = nil
     }
 
     private let defaults: UserDefaults
@@ -76,6 +77,7 @@ final class InputPriorityStore {
     private var lastOnlineUIDs: Set<String> = []
 
     var isEnabled: Bool { preferences.isEnabled }
+    var showsHUD: Bool { preferences.showsHUD ?? true }
     var devices: [RememberedInputDevice] { preferences.devices }
 
     init(
@@ -92,7 +94,8 @@ final class InputPriorityStore {
             var seen = Set<String>()
             preferences = Preferences(
                 isEnabled: saved.isEnabled,
-                devices: saved.devices.filter { !$0.uid.isEmpty && seen.insert($0.uid).inserted }
+                devices: saved.devices.filter { !$0.uid.isEmpty && seen.insert($0.uid).inserted },
+                showsHUD: saved.showsHUD
             )
         } else {
             let legacyUID = defaults.string(forKey: "preferredInputDeviceUID").flatMap { $0.isEmpty ? nil : $0 }
@@ -113,6 +116,11 @@ final class InputPriorityStore {
                 } ?? []
             )
         }
+    }
+
+    func setShowsHUD(_ value: Bool) {
+        preferences.showsHUD = value
+        save()
     }
 
     func setEnabled(_ isEnabled: Bool) {

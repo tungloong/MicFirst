@@ -8,13 +8,19 @@ DESTINATION="${DESTINATION:-platform=macOS,arch=arm64}"
 DERIVED_DATA_PATH="$ROOT_DIR/build/DerivedData"
 APP_PATH="$DERIVED_DATA_PATH/Build/Products/$CONFIGURATION/MicFirst.app"
 MODE="${1:---verify}"
+HUD_OPTION="${2:-}"
 
 case "$MODE" in
-  --verify|--preview) ;;
-  *) echo "Usage: $0 [--verify|--preview]" >&2; exit 2 ;;
+  --verify|--preview|--hud-preview|--diagnostics) ;;
+  *) echo "Usage: $0 [--verify|--preview|--diagnostics|--hud-preview [--diagnostics]]" >&2; exit 2 ;;
 esac
 
-if [[ "$MODE" == "--preview" && "$CONFIGURATION" != "Debug" ]]; then
+if [[ $# -gt 2 || ( -n "$HUD_OPTION" && ( "$MODE" != "--hud-preview" || "$HUD_OPTION" != "--diagnostics" ) ) ]]; then
+  echo "HUD options are only available with --hud-preview." >&2
+  exit 2
+fi
+
+if [[ "$MODE" != "--verify" && "$CONFIGURATION" != "Debug" ]]; then
   echo "The isolated UI preview requires a Debug build." >&2
   exit 2
 fi
@@ -27,14 +33,31 @@ xcodebuild \
   -derivedDataPath "$DERIVED_DATA_PATH" \
   build
 
+if [[ "$CONFIGURATION" == "Debug" ]]; then
+  HELPER_PATH="$DERIVED_DATA_PATH/read-system-menu-anchors"
+  xcrun swiftc "$ROOT_DIR/scripts/diagnostics/read-system-menu-anchors.swift" -o "$HELPER_PATH"
+fi
+
 # Stop the previous product name too, so only one input guardian remains active.
 pkill -x AudioInputLocker 2>/dev/null || true
 pkill -x MicFirst 2>/dev/null || true
-if [[ "$MODE" == "--preview" ]]; then
+if [[ "$MODE" == "--hud-preview" ]]; then
+  HUD_ARGS=(--priority-preview --hud-preview)
+  if [[ "$HUD_OPTION" == "--diagnostics" ]]; then
+    HUD_ARGS+=(--hud-diagnostics)
+  fi
+  open -n "$APP_PATH" --args "${HUD_ARGS[@]}"
+elif [[ "$MODE" == "--preview" ]]; then
   open -n "$APP_PATH" --args --priority-preview
+elif [[ "$MODE" == "--diagnostics" ]]; then
+  open -n "$APP_PATH" --args --hud-diagnostics
 else
   open -n "$APP_PATH"
 fi
 
 sleep 1
-pgrep -x MicFirst
+APP_PID="$(pgrep -x MicFirst | head -n 1)"
+if [[ "$CONFIGURATION" == "Debug" ]]; then
+  "$HELPER_PATH" --deliver "$APP_PID"
+fi
+printf '%s\n' "$APP_PID"

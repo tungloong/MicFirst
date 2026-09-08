@@ -47,7 +47,7 @@ Signed and notarized distribution and Mac App Store validation remain future wor
 - Provides Settings with the full numbered priority list, menu visibility controls, and offline deletion.
 - Excludes manually hidden devices from automatic selection.
 - Turns automatic mode off for manual selections while preserving the order.
-- Shows the existing transient HUD after confirming an automatic restoration.
+- Shows a configurable transient HUD after confirming an automatic restoration.
 - Supports English and Simplified Chinese, following the system language.
 
 ## Requirements
@@ -76,6 +76,12 @@ Then use the local helper script:
 The script builds the Debug app, stops any running `MicFirst` and
 `AudioInputLocker` processes, and opens the freshly built MicFirst app from
 `build/DerivedData`.
+
+The current Debug script also reads menu-button coordinates once through a public
+Accessibility helper in an already-authorized execution context. HUD presentation
+currently depends on this startup snapshot; standalone/Release launch integration
+remains unfinished. Automatic microphone priority works independently. See
+[HUD behavior and limits](docs/input-priority.md).
 
 Manual build:
 
@@ -166,8 +172,9 @@ MicFirst is built with SwiftUI, AppKit, and Core Audio.
   volume reads and writes, and device-change monitoring.
 - The priority order, remembered device metadata, and automatic-mode switch are stored locally in `UserDefaults`.
 - App Sandbox entitlements are included for Mac App Store validation.
-- The HUD is an `NSPanel` at status-bar level so it can sit near the menu bar
-  without taking normal app focus.
+- The HUD uses a borderless `NSWindow` above ordinary pop-up menus and refuses
+  key/main focus. On macOS 26+, untinted clear glass sits over Popover material
+  at 0.80 opacity for readability.
 - The app does not use private APIs.
 
 ## Privacy
