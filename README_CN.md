@@ -66,7 +66,7 @@ cd MicFirst
 
 这个脚本会构建 Debug app，停止正在运行的 `MicFirst` 和 `AudioInputLocker` 进程，然后从 `build/DerivedData` 打开新构建的 MicFirst app。
 
-当前 Debug 脚本还会在已有辅助功能授权的执行环境中，通过公开 API 一次性读取菜单栏按钮坐标。HUD 目前依赖这份启动快照，独立启动／Release 的接入仍未完成；麦克风自动优先级功能独立工作。详见 [HUD 行为与限制](docs/input-priority.md)。
+当前 Debug 脚本还会在已有辅助功能授权的执行环境中，通过公开 API 获取菜单栏按钮坐标快照。启动交付最多重试 10 秒，直到应用确认收到可用快照。HUD 目前依赖这份启动快照，独立启动／Release 的接入仍未完成；麦克风自动优先级功能独立工作。详见 [HUD 行为与限制](docs/input-priority.md)。
 
 手动构建：
 

@@ -180,3 +180,106 @@ final class HUDHorizontalPlacementTests: XCTestCase {
         XCTAssertEqual(place(center, system(1000)), own(center))
     }
 }
+
+@MainActor
+final class HUDMenuAnchorReceiverTests: XCTestCase {
+    private let center = DistributedNotificationCenter.default()
+    private let processID = ProcessInfo.processInfo.processIdentifier
+    private let ownAnchor = HUDSystemMenuAnchor(
+        identifier: "micfirst-status-item",
+        buttonFrame: CGRect(x: 1200, y: 1082, width: 34, height: 22),
+        screenFrame: CGRect(x: 0, y: 0, width: 1710, height: 1112)
+    )
+
+    private func send(_ anchors: [HUDSystemMenuAnchor], id: UUID) throws {
+        let json = String(decoding: try JSONEncoder().encode(HUDMenuAnchorSnapshot(deliveryID: id, anchors: anchors)), as: UTF8.self)
+        center.postNotificationName(Notification.Name("MicFirst.MenuAnchorSnapshot.\(processID)"),
+                                    object: json, userInfo: nil, deliverImmediately: true)
+    }
+
+    private func sendAndAwaitAcknowledgement(_ anchors: [HUDSystemMenuAnchor], id: UUID) async throws {
+        let acknowledgement = expectation(description: "Snapshot is accepted")
+        let observer = center.addObserver(
+            forName: Notification.Name("MicFirst.MenuAnchorSnapshotAccepted.\(processID)"),
+            object: id.uuidString, queue: .main
+        ) { _ in acknowledgement.fulfill() }
+        defer { center.removeObserver(observer) }
+        try send(anchors, id: id)
+        await fulfillment(of: [acknowledgement], timeout: 2)
+    }
+
+    private func finish(_ id: UUID) {
+        center.postNotificationName(Notification.Name("MicFirst.MenuAnchorSnapshotFinished.\(processID)"),
+                                    object: id.uuidString, userInfo: nil, deliverImmediately: true)
+    }
+
+    func testIncompleteSnapshotsLeaveReceiverAvailableForValidRetry() async throws {
+        var applied: [[HUDSystemMenuAnchor]] = []
+        let receiver = HUDMenuAnchorReceiver { applied.append($0); return true }
+        receiver.start()
+        defer { receiver.stop() }
+        let id = UUID()
+        let systemOnly = HUDSystemMenuAnchor(identifier: "com.apple.menuextra.sound",
+                                             buttonFrame: ownAnchor.buttonFrame, screenFrame: ownAnchor.screenFrame)
+        let invalidOwn = HUDSystemMenuAnchor(identifier: "micfirst-status-item", buttonFrame: .zero, screenFrame: ownAnchor.screenFrame)
+        center.postNotificationName(Notification.Name("MicFirst.MenuAnchorSnapshot.\(processID)"),
+                                    object: "malformed", userInfo: nil, deliverImmediately: true)
+        try send([], id: id)
+        try send([systemOnly], id: id)
+        try send([invalidOwn], id: id)
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertTrue(applied.isEmpty)
+        XCTAssertTrue(receiver.isListening)
+        try await sendAndAwaitAcknowledgement([ownAnchor, systemOnly], id: id)
+        XCTAssertEqual(applied, [[ownAnchor, systemOnly]])
+    }
+
+    func testUnusableDisplayGeometryCanBeRetriedUntilAccepted() async throws {
+        var ready = false
+        var applications = 0
+        let rejected = expectation(description: "The controller rejects a transient anchor")
+        let receiver = HUDMenuAnchorReceiver { _ in
+            guard ready else { rejected.fulfill(); return false }
+            applications += 1
+            return true
+        }
+        receiver.start()
+        defer { receiver.stop() }
+        let id = UUID()
+        try send([ownAnchor], id: id)
+        await fulfillment(of: [rejected], timeout: 2)
+        ready = true
+        try await sendAndAwaitAcknowledgement([ownAnchor], id: id)
+        XCTAssertEqual(applications, 1)
+    }
+
+    func testLostAcknowledgementCanBeRetriedWithoutReplacingSnapshot() async throws {
+        var applications = 0
+        let receiver = HUDMenuAnchorReceiver { _ in applications += 1; return true }
+        receiver.start()
+        defer { receiver.stop() }
+        let id = UUID()
+        try await sendAndAwaitAcknowledgement([ownAnchor], id: id)
+        // The sender retries if its first acknowledgement did not arrive.
+        try await sendAndAwaitAcknowledgement([ownAnchor], id: id)
+        XCTAssertEqual(applications, 1)
+        let unrelatedID = UUID()
+        try send([ownAnchor], id: unrelatedID)
+        finish(unrelatedID)
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertEqual(applications, 1)
+        XCTAssertTrue(receiver.isListening)
+        finish(id)
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertFalse(receiver.isListening)
+    }
+
+    func testAbandonedHandshakeExpiresWithoutKeepingObservers() async throws {
+        let receiver = HUDMenuAnchorReceiver { _ in XCTFail("Expired receiver must not apply snapshots"); return true }
+        receiver.start(timeout: 0.05)
+        try await Task.sleep(nanoseconds: 150_000_000)
+        XCTAssertFalse(receiver.isListening)
+        try send([ownAnchor], id: UUID())
+        try await Task.sleep(nanoseconds: 100_000_000)
+    }
+}

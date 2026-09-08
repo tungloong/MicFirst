@@ -17,7 +17,9 @@ its release history remains in [its repository](https://github.com/tungloong/Aud
 - Refined the restoration HUD with clear Liquid Glass over Popover material at
   0.80 opacity, system-accent controls, and a persistent Settings visibility switch.
 - Added horizontal HUD avoidance using Sound/Control Center menu-button snapshots;
-  the sandboxed development helper reads coordinates once at startup. Standalone
+  the sandboxed development helper acquires a startup snapshot with bounded retries
+  and acknowledgement, so slow launch or incomplete geometry cannot silently consume
+  the only delivery. Standalone
   HUD integration remains pending.
 - Preserve the system MenuBarExtra window and event-triggered glass appearance
   refreshes without recurring one-second appearance maintenance.

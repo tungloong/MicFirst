@@ -25,7 +25,7 @@ final class MicFirstAppDelegate: NSObject, NSApplicationDelegate {
     let statusController = StatusItemController()
     #if DEBUG
     private var didShowPreview = false
-    private var menuAnchorObserver: NSObjectProtocol?
+    private var menuAnchorReceiver: HUDMenuAnchorReceiver?
     #endif
 
     override init() {
@@ -49,19 +49,13 @@ final class MicFirstAppDelegate: NSObject, NSApplicationDelegate {
             self?.showPreviewIfReady()
         }
         #if DEBUG
-        menuAnchorObserver = DistributedNotificationCenter.default().addObserver(
-            forName: Notification.Name("MicFirst.MenuAnchorSnapshot.\(ProcessInfo.processInfo.processIdentifier)"),
-            object: nil, queue: .main
-        ) { [weak self] note in
-            MainActor.assumeIsolated {
-                guard let self, let json = note.object as? String else { return }
-                let anchors = HUDMenuAnchorSnapshot.load(arguments: ["--system-menu-anchors", json])
-                PreferredInputHUD.shared.updateSystemMenuAnchors(anchors)
-                self.statusController.update(anchors)
-                if let observer = self.menuAnchorObserver { DistributedNotificationCenter.default().removeObserver(observer) }
-                self.menuAnchorObserver = nil
-            }
+        let receiver = HUDMenuAnchorReceiver { [weak controller] anchors in
+            guard let controller, controller.update(anchors) else { return false }
+            PreferredInputHUD.shared.updateSystemMenuAnchors(anchors)
+            return true
         }
+        menuAnchorReceiver = receiver
+        receiver.start()
         HUDDiagnostics.shared.start(
             anchor: { [weak controller] in controller?.hudAnchor() },
             presentation: { PreferredInputHUD.shared.diagnosticPresentation() }
@@ -85,7 +79,7 @@ final class MicFirstAppDelegate: NSObject, NSApplicationDelegate {
         PreferredInputHUD.shared.dismissForMenuOpening()
         #if DEBUG
         HUDDiagnostics.shared.stop()
-        if let menuAnchorObserver { DistributedNotificationCenter.default().removeObserver(menuAnchorObserver) }
+        menuAnchorReceiver?.stop()
         #endif
     }
 

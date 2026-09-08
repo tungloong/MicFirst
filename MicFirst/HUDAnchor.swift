@@ -76,15 +76,87 @@ struct HUDSystemMenuAnchor: Codable, Equatable {
 }
 
 #if DEBUG
-/// One launch snapshot from the authorized development helper; no polling or expiry.
-enum HUDMenuAnchorSnapshot {
-    static func load(arguments: [String] = ProcessInfo.processInfo.arguments) -> [HUDSystemMenuAnchor] {
-        guard let index = arguments.firstIndex(of: "--system-menu-anchors"), index + 1 < arguments.count else { return [] }
-        let json = arguments[index + 1]
+/// The delivery ID stays the same across startup retries; only one snapshot is applied.
+struct HUDMenuAnchorSnapshot: Codable {
+    let deliveryID: UUID
+    let anchors: [HUDSystemMenuAnchor]
+
+    static func decode(_ json: String) -> Self? {
         guard json.utf8.count < 32_768,
-              let anchors = try? JSONDecoder().decode([HUDSystemMenuAnchor].self, from: Data(json.utf8)),
-              anchors.count <= 64 else { return [] }
-        return anchors.filter(\.isValid)
+              let snapshot = try? JSONDecoder().decode(Self.self, from: Data(json.utf8)),
+              snapshot.anchors.count <= 64 else { return nil }
+        return Self(deliveryID: snapshot.deliveryID, anchors: snapshot.anchors.filter(\.isValid))
+    }
+}
+
+/// Startup-only transport. Invalid snapshots keep the receiver open; duplicate
+/// deliveries are acknowledged again until the helper confirms receipt or time runs out.
+@MainActor
+final class HUDMenuAnchorReceiver {
+    private let center = DistributedNotificationCenter.default()
+    private let processID: pid_t
+    private let accept: ([HUDSystemMenuAnchor]) -> Bool
+    private var observers: [NSObjectProtocol] = []
+    private var expiry: DispatchWorkItem?
+    private var acceptedID: UUID?
+    var isListening: Bool { !observers.isEmpty }
+
+    init(processID: pid_t = ProcessInfo.processInfo.processIdentifier,
+         accept: @escaping ([HUDSystemMenuAnchor]) -> Bool) {
+        self.processID = processID
+        self.accept = accept
+    }
+
+    deinit {
+        expiry?.cancel()
+        observers.forEach(center.removeObserver)
+    }
+
+    func start(timeout: TimeInterval = 30) {
+        guard !isListening else { return }
+        acceptedID = nil
+        observers.append(center.addObserver(
+            forName: Notification.Name("MicFirst.MenuAnchorSnapshot.\(processID)"), object: nil, queue: .main
+        ) { [weak self] note in
+            MainActor.assumeIsolated {
+                guard let json = note.object as? String else { return }
+                self?.receive(json)
+            }
+        })
+        observers.append(center.addObserver(
+            forName: Notification.Name("MicFirst.MenuAnchorSnapshotFinished.\(processID)"), object: nil, queue: .main
+        ) { [weak self] note in
+            MainActor.assumeIsolated {
+                guard let self, let acceptedID = self.acceptedID,
+                      note.object as? String == acceptedID.uuidString else { return }
+                self.stop()
+            }
+        })
+        let expiry = DispatchWorkItem { [weak self] in self?.stop() }
+        self.expiry = expiry
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeout, execute: expiry)
+    }
+
+    func stop() {
+        expiry?.cancel()
+        expiry = nil
+        observers.forEach(center.removeObserver)
+        observers.removeAll()
+    }
+
+    private func receive(_ json: String) {
+        guard let snapshot = HUDMenuAnchorSnapshot.decode(json) else { return }
+        if let acceptedID {
+            guard snapshot.deliveryID == acceptedID else { return }
+        } else {
+            guard snapshot.anchors.contains(where: { $0.identifier == "micfirst-status-item" }),
+                  accept(snapshot.anchors) else { return }
+            acceptedID = snapshot.deliveryID
+        }
+        center.postNotificationName(
+            Notification.Name("MicFirst.MenuAnchorSnapshotAccepted.\(processID)"),
+            object: snapshot.deliveryID.uuidString, userInfo: nil, deliverImmediately: true
+        )
     }
 }
 #endif

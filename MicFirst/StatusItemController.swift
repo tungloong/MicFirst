@@ -6,12 +6,19 @@ import AppKit
 final class StatusItemController: HUDAnchorProviding {
     private var snapshot: HUDSystemMenuAnchor?
     var anchorChanged: (() -> Void)?
-    func update(_ anchors: [HUDSystemMenuAnchor]) {
-        snapshot = anchors.first { $0.identifier == "micfirst-status-item" && $0.isValid }
+    @discardableResult
+    func update(_ anchors: [HUDSystemMenuAnchor]) -> Bool {
+        guard let candidate = anchors.first(where: { $0.identifier == "micfirst-status-item" && $0.isValid }),
+              hudAnchor(for: candidate) != nil else { return false }
+        snapshot = candidate
         anchorChanged?()
+        return true
     }
     func hudAnchor() -> HUDAnchor? {
-        guard let snapshot, let screen = NSScreen.screens.first(where: { $0.frame == snapshot.screenFrame }) else { return nil }
+        snapshot.flatMap { hudAnchor(for: $0) }
+    }
+    private func hudAnchor(for snapshot: HUDSystemMenuAnchor) -> HUDAnchor? {
+        guard let screen = NSScreen.screens.first(where: { $0.frame == snapshot.screenFrame }) else { return nil }
         // The menu-bar boundary comes from the display work area. This is a
         // measured menu region, not a claim to have read a foreign NSWindow.
         let bottom = screen.visibleFrame.maxY < screen.frame.maxY ? screen.visibleFrame.maxY : snapshot.buttonFrame.minY

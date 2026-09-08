@@ -77,8 +77,9 @@ The script builds the Debug app, stops any running `MicFirst` and
 `AudioInputLocker` processes, and opens the freshly built MicFirst app from
 `build/DerivedData`.
 
-The current Debug script also reads menu-button coordinates once through a public
-Accessibility helper in an already-authorized execution context. HUD presentation
+The current Debug script also acquires a menu-button snapshot through a public
+Accessibility helper in an already-authorized execution context. Startup delivery
+retries for up to 10 seconds until the app acknowledges a usable snapshot. HUD presentation
 currently depends on this startup snapshot; standalone/Release launch integration
 remains unfinished. Automatic microphone priority works independently. See
 [HUD behavior and limits](docs/input-priority.md).

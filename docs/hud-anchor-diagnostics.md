@@ -16,14 +16,21 @@ panel were replaced by the system menu.
 In a Debug development run, `scripts/build-and-run.sh`:
 
 1. Builds the app and the retained `scripts/diagnostics/read-system-menu-anchors.swift` helper.
-2. Restarts MicFirst and waits for startup.
-3. Runs the helper once to read public Accessibility geometry for Sound,
-   Control Center and MicFirst's own menu button.
-4. Delivers validated JSON to the app through a PID-specific one-shot notification.
-   The helper then exits and the app removes its receiver.
+2. Restarts MicFirst and waits up to 10 seconds for its process to appear.
+3. Runs one helper process, which waits for application launch and retries public
+   Accessibility geometry for Sound, Control Center and MicFirst's own menu button.
+4. Retries delivery at 250 ms intervals, within a 10-second deadline, until the app
+   acknowledges a snapshot containing a usable own-button anchor. Empty, invalid,
+   or temporarily unusable snapshots do not consume the receiver.
+5. Confirms receipt of that acknowledgement, then exits. The app removes its
+   receiver after this confirmation, or after a 30-second startup deadline if
+   the helper disappears. Repeated deliveries are acknowledged without replacing
+   the accepted snapshot.
 
 The helper needs an already-authorized Accessibility execution context. It never
-prompts, changes settings, reads popup contents, or polls in the background.
+prompts, changes settings, reads popup contents, or polls after startup delivery.
+Missing authorization, an exited app, or a delivery timeout produces a nonzero
+helper/script result with an explanation instead of reporting successful delivery.
 The app keeps the snapshot until it exits. Move/hide a relevant menu icon or change
 displays, then relaunch through the script to refresh the coordinates.
 
@@ -67,8 +74,8 @@ one-second heartbeat to a unique JSONL file under:
 ```
 
 This sampler is separate from startup button acquisition and appearance support;
-it runs only with the explicit diagnostic argument. Ordinary runs do not poll
-windows or periodically refresh button coordinates. Appearance support retains
+it runs only with the explicit diagnostic argument. After the bounded startup
+handshake, ordinary runs do not poll windows or refresh button coordinates. Appearance support retains
 only bounded presentation/app-switch bursts, with no recurring one-second timer.
 
 The log records no screenshots, window-title contents, audio samples or audio-device
@@ -104,6 +111,7 @@ old metadata watcher were removed at closeout; sanitized findings remain in
 trigger tests merely because the diagnostic result is unknown.
 
 Current tests cover fixed-height/horizontal geometry, screen edges, Sound-first
-selection, snapshot validation, uncertain diagnostic evidence, HUD preference
+selection, snapshot validation, incomplete-snapshot retries, duplicate delivery
+acknowledgements, receiver cleanup, uncertain diagnostic evidence, HUD preference
 migration, event-only appearance bursts, and microphone route regressions. Real
 multi-display, auto-hide and future OS behavior still require device validation.

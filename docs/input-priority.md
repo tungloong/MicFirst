@@ -76,11 +76,17 @@ of automatic input. Turning it off dismisses visible HUDs; turning it back on do
 not replay old events.
 
 **Current integration is a Debug startup snapshot.** `build-and-run.sh` invokes
-an external public-Accessibility helper once per launch/relaunch. It reads
-Sound/Control Center and MicFirst menu geometry once after launch, delivers
-validated JSON through a one-shot notification, and exits. The app retains that snapshot for the process lifetime;
-there is no background coordinate helper, periodic refresh, notification feed,
-or expiration timer. Move/hide a system button or change displays, then relaunch
+an external public-Accessibility helper once per launch/relaunch. Within a
+10-second deadline, it waits for launch, reads Sound/Control Center and MicFirst
+menu geometry, and retries delivery until the app acknowledges a usable own-button
+anchor. Invalid or incomplete snapshots leave the receiver open. Retries share a
+delivery ID so a lost acknowledgement can be repeated without applying the snapshot
+again. The helper confirms acknowledgement and exits; the app removes its receiver
+on confirmation, with a 30-second startup cleanup deadline for abandoned handshakes.
+Timeouts and unavailable authorization are reported by the launch script.
+The app retains the accepted snapshot for the process lifetime; there is no
+background coordinate helper, periodic refresh, or snapshot expiration.
+Move/hide a system button or change displays, then relaunch
 through the script to refresh the snapshot. The own icon also uses the startup snapshot. No entitlement, private API, or permission prompt was added;
 the helper needs an already-authorized Accessibility execution context.
 
