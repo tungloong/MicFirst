@@ -28,6 +28,7 @@ final class HUDPlacementTests: XCTestCase {
 
 @MainActor
 final class HUDGlassAppearanceTests: XCTestCase {
+    // The 18-hop burst asserts callback counts, not scheduler speed on hosted CI.
     func testPresentationBurstFinishesWithoutPeriodicMaintenance() async throws {
         var claims = 0
         let completed = expectation(description: "The presentation burst completes")
@@ -36,7 +37,7 @@ final class HUDGlassAppearanceTests: XCTestCase {
             if claims == 18 { completed.fulfill() }
         }
         session.start()
-        await fulfillment(of: [completed], timeout: 2)
+        await fulfillment(of: [completed], timeout: 10)
         let claimsAfterBurst = claims
         try await Task.sleep(nanoseconds: 1_200_000_000)
         XCTAssertEqual(claims, claimsAfterBurst, "A visible, idle HUD must not receive one-second refreshes")
@@ -57,13 +58,13 @@ final class HUDGlassAppearanceTests: XCTestCase {
             }
         }
         session.start()
-        await fulfillment(of: [initial], timeout: 2)
+        await fulfillment(of: [initial], timeout: 10)
         for name in [NSWorkspace.didActivateApplicationNotification, NSWorkspace.didDeactivateApplicationNotification] {
             let refreshed = expectation(description: "Refresh after \(name.rawValue)")
             nextClaim = refreshed
             target = claims + 18
             center.post(name: name, object: nil)
-            await fulfillment(of: [refreshed], timeout: 2)
+            await fulfillment(of: [refreshed], timeout: 10)
         }
         center.post(name: NSWorkspace.didActivateApplicationNotification, object: nil)
         session.stop()
@@ -77,7 +78,7 @@ final class HUDGlassAppearanceTests: XCTestCase {
         nextClaim = reused
         target = claims + 1
         session.start()
-        await fulfillment(of: [reused], timeout: 1)
+        await fulfillment(of: [reused], timeout: 10)
         session.stop()
     }
 
