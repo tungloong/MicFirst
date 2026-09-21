@@ -155,7 +155,7 @@ receive a connection suffix so they can be distinguished.
 - `docs/visual-assets.md`: icon assets and visual notes.
 - `docs/troubleshooting.md`: FAQ and troubleshooting notes.
 - `docs/github-release.md`: GitHub repository setup notes.
-- `docs/app-store`: App Store metadata, privacy policy, and release checklist.
+- `docs/app-store`: App Store metadata, privacy policy, release checklist, and the dual-channel release plan.
 - `docs/product-decisions.md`: product boundaries and dated decisions.
 - `docs/liquid-glass-investigation.md`: historical notes from HUD visual
   experiments.
@@ -213,9 +213,13 @@ More notes are in `docs/troubleshooting.md`.
 
 ## Roadmap
 
-- Ship a signed and notarized direct-download build.
-- Validate App Sandbox behavior for Mac App Store distribution.
+- Ship a free Mac App Store release and a signed, notarized direct download.
 - Add release packaging and upload automation beyond the preview script.
+
+App Sandbox no longer blocks the Mac App Store path: the Core Audio calls
+MicFirst needs were verified inside the sandbox. The remaining release work is
+account setup and real-device testing. See
+[release-plan.md](docs/app-store/release-plan.md).
 
 As of September 7, 2026, multi-microphone mixing and fusion are outside the
 near-term roadmap. See [product decisions](docs/product-decisions.md).

@@ -1,5 +1,8 @@
 # App Store Release Checklist
 
+The dual-channel plan, including the verified signing state and the two
+remaining blockers, is in [release-plan.md](release-plan.md).
+
 ## App Store Connect
 
 - Create a macOS app record for `MicFirst`.
@@ -30,5 +33,8 @@
   - Reconnect a USB microphone.
   - Test AirPods auto-switching.
 
-If sandboxing prevents the core input-switching behavior, use GitHub notarized
-direct distribution instead of Mac App Store distribution.
+The Core Audio calls above were verified with a sandboxed probe app on this
+Mac: enumeration, reading the default input, switching it, reading and writing
+input volume, and both device-list and default-input listeners all work inside
+App Sandbox. The probe had only the built-in microphone available, so the USB
+and AirPods rows remain unverified.

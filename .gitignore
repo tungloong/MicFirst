@@ -15,3 +15,8 @@ xcuserdata/
 .env
 .env.*
 .claude/
+
+# Local App Store Connect working artifacts (may contain signing material)
+.asc/
+*.mobileprovision
+*.p12

@@ -25,7 +25,7 @@ MicFirst 当前源码使用 MIT License 发布，已实现下文的输入优先�
 
 后续下载会发布在 [MicFirst Releases](https://github.com/tungloong/MicFirst/releases)。
 AudioInputLocker 的现有下载属于它自己的产品。
-签名、公证和 Mac App Store 分发验证仍是后续工作。
+签名、公证与 Mac App Store 上架仍在准备中，双渠道计划见 [docs/app-store/release-plan.md](docs/app-store/release-plan.md)。
 
 ## 功能
 
@@ -130,7 +130,7 @@ App 当前包含：
 - `docs/visual-assets.md`：图标资源和视觉说明。
 - `docs/troubleshooting.md`：FAQ 和故障排查说明。
 - `docs/github-release.md`：GitHub 仓库设置说明。
-- `docs/app-store`：App Store metadata、隐私政策和发布检查清单。
+- `docs/app-store`：App Store metadata、隐私政策、发布检查清单和双渠道发布计划。
 - `docs/product-decisions.md`：产品边界和带日期的决策。
 - `docs/liquid-glass-investigation.md`：HUD 视觉实验的历史记录。
 - `docs/project-notes.md`：保留供参考的 AudioInputLocker 历史背景。
@@ -177,9 +177,12 @@ app 不录音，因此正常情况下不需要请求麦克风录制权限。
 
 ## Roadmap
 
-- 提供 signed 和 notarized 的直接下载版本。
-- 验证 App Sandbox 下的 Mac App Store 分发可行性。
+- 在 Mac App Store 免费上架，并提供 signed 和 notarized 的直接下载版本。
 - 在 preview 脚本之外继续补齐发布打包和上传自动化。
+
+App Sandbox 已不再阻挡 Mac App Store 路线：MicFirst 依赖的 Core Audio 调用已在
+沙盒内验证通过。剩余工作是账户配置与真机测试，详见
+[release-plan.md](docs/app-store/release-plan.md)。
 
 2026 年 9 月 7 日决定：短期不探索多麦混音与融合。详见[产品决策](docs/product-decisions.md)。
 
