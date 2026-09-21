@@ -39,7 +39,7 @@ AudioInputLocker 的现有下载属于它自己的产品。
 - 设置窗口保留带优先级序号的完整列表，支持排序、隐藏和删除离线设备。
 - 手动隐藏的设备不参与自动选择。
 - 手动选择其他设备会关闭自动模式，同时保留排序。
-- 确认自动恢复成功后显示短暂 HUD，可在 Settings 中关闭。
+- 确认自动恢复成功后显示短暂 HUD，可在 Settings 中关闭。Direct Download（Developer ID 直接下载版）尚未发布，因此该版本不会显示 HUD；Debug 启动快照仍是 HUD 定位的必要条件。
 - 支持英文和简体中文，并跟随系统语言。
 
 ## 系统要求
@@ -47,7 +47,7 @@ AudioInputLocker 的现有下载属于它自己的产品。
 - 运行环境：macOS 13.0 或更新版本。
 - 构建环境：带 macOS 26 SDK 的 Xcode。
 
-App 的部署目标是 macOS 13.0。HUD 会在可用时使用公开的 macOS 26 Liquid Glass API，并在旧系统上使用回退实现。
+第一个公开二进制版本尚未发布，发布前需完成 Developer ID Application 签名与 Apple 公证。App 的部署目标是 macOS 13.0。HUD 会在可用时使用公开的 macOS 26 Liquid Glass API，并在旧系统上使用回退实现。
 
 ## 构建与运行
 

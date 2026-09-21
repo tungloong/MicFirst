@@ -47,7 +47,7 @@ Signed and notarized distribution and Mac App Store validation remain future wor
 - Provides Settings with the full numbered priority list, menu visibility controls, and offline deletion.
 - Excludes manually hidden devices from automatic selection.
 - Turns automatic mode off for manual selections while preserving the order.
-- Shows a configurable transient HUD after confirming an automatic restoration.
+- Shows a configurable transient HUD after confirming an automatic restoration. Until the first Developer ID direct download exists, that build presents no HUD; the Debug startup snapshot is still required for HUD placement.
 - Supports English and Simplified Chinese, following the system language.
 
 ## Requirements
@@ -55,7 +55,7 @@ Signed and notarized distribution and Mac App Store validation remain future wor
 - macOS 13.0 or later at runtime.
 - Xcode with the macOS 26 SDK to build the current source.
 
-The app targets macOS 13.0. The HUD uses public macOS 26 Liquid Glass APIs when
+The first public binary is not published yet. Developer ID Application signing and Apple notarization are prerequisites. The app targets macOS 13.0. The HUD uses public macOS 26 Liquid Glass APIs when
 available and falls back on older systems.
 
 ## Build And Run
