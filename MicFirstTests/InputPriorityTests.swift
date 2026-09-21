@@ -545,7 +545,11 @@ final class InputPriorityTests: XCTestCase {
         audio.available = [device(2), device(3)]
         await audio.emitChange()
         XCTAssertEqual(model.menuRows.map(\.id), ["1", "2", "3"])
-        try await Task.sleep(nanoseconds: 150_000_000)
+        // CI scheduling can delay the main-queue refresh beyond a fixed sleep.
+        let deadline = ContinuousClock.now.advanced(by: .seconds(2))
+        while model.menuRows.map(\.id) != ["2", "3"], ContinuousClock.now < deadline {
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
         XCTAssertEqual(model.menuRows.map(\.id), ["2", "3"])
         XCTAssertEqual(model.priorityRows.count, 3)
         audio.available = [device(1), device(2), device(3)]
