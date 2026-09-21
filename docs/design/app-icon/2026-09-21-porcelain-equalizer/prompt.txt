@@ -1,0 +1,16 @@
+Use case: precise-object-edit
+Input: The supplied MicFirst icon is the EDIT TARGET. The user approves everything except the decorative markings on the race track. Make ONLY this narrowly scoped revision.
+
+TRACK MARKINGS:
+Remove ALL existing markings from inside the pale celadon lanes: the thin white waveform baseline, white amplitude glyph, nested wave arcs, darker equalizer marks, and the white finish-line ticks beside the front foot. Keep the smooth celadon lane surfaces, lane geometry, color and separation exactly as they are.
+
+Replace those markings with only TWO small, well-spaced groups of audio equalizer bars, one in the open foreground lane and one farther back near the trailing devices. Each group contains 5–7 simple rounded short bars of varying lengths, like a frozen instant of bouncing audio levels. Use the SAME muted medium celadon color for both groups, slightly darker than the track, subtle and legible. Flat inlaid markings on the road surface, no raised towers. No continuous baseline, no connecting line, no sine wave, no concentric arcs, no finish ticks, no other symbols.
+
+CRITICAL ORIENTATION:
+Each bar lies ACROSS its lane, at a right angle (90 degrees) to the LOCAL DIRECTION OF TRAVEL of the curved track. The CENTERS of consecutive bars progress ALONG the lane, while each bar's LONG AXIS runs PERPENDICULAR to the lane tangent, like short cross-track sleepers. Bar lengths alternate short/medium/tall/medium/short with a lively but controlled equalizer rhythm. As the lane curves, the bars gently rotate to remain crosswise. Respect the ground-plane perspective. They must not be arbitrary screen-vertical marks, must not run lengthwise along the track, and must not form a straight floating overlay. Keep ample blank celadon track between and around the two groups.
+
+STRICT INVARIANTS:
+Preserve the exact composition, camera, rounded tile size and position, porcelain-white lead microphone, warm-gray titanium cradle and limbs, three dark grille slots, vermilion-red baton and its exact white numeral "1", the hand gripping the baton, headphone and speaker positions, all limbs and their correct attachments, lighting, materials, shadows and existing colors. No ribbon or new objects. No additional text. Do not redesign or recolor anything.
+
+OUTPUT:
+One square PNG with REAL transparent alpha outside the rounded tile, preserving the current transparent margin and all four fully transparent corners. No black/white/checkerboard background painted outside the tile. Keep the tile and its contents opaque, with a clean antialiased outer contour.

@@ -1,7 +1,7 @@
 # MicFirst
 
 <p align="center">
-  <img src="docs/assets/audio-input-locker-app-icon-256.png" width="112" alt="MicFirst app icon">
+  <img src="docs/assets/micfirst-app-icon-256.png" width="112" alt="MicFirst app icon">
 </p>
 
 <p align="center">

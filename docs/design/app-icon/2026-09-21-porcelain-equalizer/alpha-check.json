@@ -1,0 +1,75 @@
+{
+  "file": "porcelain-equalizer-original.png",
+  "size": [
+    1254,
+    1254
+  ],
+  "mode": "RGBA",
+  "has_alpha": true,
+  "sha256": "bfc72768565784ef65fab52095cff1991b4f75fbbf24f9b3cd30831e2c72649f",
+  "corner_alpha": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "fully_transparent": 560157,
+  "most_common_alpha": [
+    [
+      253,
+      831703
+    ],
+    [
+      0,
+      560157
+    ],
+    [
+      252,
+      141962
+    ],
+    [
+      1,
+      9214
+    ],
+    [
+      254,
+      4450
+    ]
+  ],
+  "edge_nontransparent": {
+    "top": 0,
+    "bottom": 0,
+    "left": 18,
+    "right": 0
+  },
+  "bounds_alpha_gt_0": [
+    0,
+    48,
+    1220,
+    1230
+  ],
+  "bounds_alpha_gt_2": [
+    106,
+    120,
+    1146,
+    1140
+  ],
+  "bounds_alpha_gt_16": [
+    109,
+    122,
+    1144,
+    1132
+  ],
+  "bounds_alpha_gt_128": [
+    109,
+    123,
+    1143,
+    1131
+  ],
+  "bounds_alpha_gt_240": [
+    110,
+    123,
+    1142,
+    1131
+  ]
+}

@@ -1,0 +1,271 @@
+{
+  "passed": true,
+  "slots": [
+    {
+      "file": "MicFirst/Assets.xcassets/AppIcon.appiconset/icon_16x16.png",
+      "pixels": 16,
+      "mode": "RGBA",
+      "alphaBounds": [
+        1,
+        1,
+        15,
+        15
+      ],
+      "fullyTransparent": 68,
+      "fullyOpaque": 96,
+      "edgesClear": true,
+      "centerOpaque": true,
+      "sha256": "afb06a21866ff90c3c47041cb16529de032015a0457957821228e96dc8ee4345"
+    },
+    {
+      "file": "MicFirst/Assets.xcassets/AppIcon.appiconset/icon_16x16@2x.png",
+      "pixels": 32,
+      "mode": "RGBA",
+      "alphaBounds": [
+        3,
+        3,
+        29,
+        29
+      ],
+      "fullyTransparent": 376,
+      "fullyOpaque": 468,
+      "edgesClear": true,
+      "centerOpaque": true,
+      "sha256": "1c9e0da36d686db0e3517e8ccab8436594f10e171eb916ba12135189036db094"
+    },
+    {
+      "file": "MicFirst/Assets.xcassets/AppIcon.appiconset/icon_32x32.png",
+      "pixels": 32,
+      "mode": "RGBA",
+      "alphaBounds": [
+        3,
+        3,
+        29,
+        29
+      ],
+      "fullyTransparent": 376,
+      "fullyOpaque": 468,
+      "edgesClear": true,
+      "centerOpaque": true,
+      "sha256": "1c9e0da36d686db0e3517e8ccab8436594f10e171eb916ba12135189036db094"
+    },
+    {
+      "file": "MicFirst/Assets.xcassets/AppIcon.appiconset/icon_32x32@2x.png",
+      "pixels": 64,
+      "mode": "RGBA",
+      "alphaBounds": [
+        6,
+        6,
+        58,
+        58
+      ],
+      "fullyTransparent": 1522,
+      "fullyOpaque": 2188,
+      "edgesClear": true,
+      "centerOpaque": true,
+      "sha256": "ed1de3cdf8927b5699a1f4a4f0e0f71cc1a503910986833a1253bbc2255853e7"
+    },
+    {
+      "file": "MicFirst/Assets.xcassets/AppIcon.appiconset/icon_128x128.png",
+      "pixels": 128,
+      "mode": "RGBA",
+      "alphaBounds": [
+        12,
+        13,
+        116,
+        115
+      ],
+      "fullyTransparent": 6276,
+      "fullyOpaque": 9297,
+      "edgesClear": true,
+      "centerOpaque": true,
+      "sha256": "96a9764ae01b88a490e0c5001cf3c5b102b49add37dd3611e42d28ebb8b4e45c"
+    },
+    {
+      "file": "MicFirst/Assets.xcassets/AppIcon.appiconset/icon_128x128@2x.png",
+      "pixels": 256,
+      "mode": "RGBA",
+      "alphaBounds": [
+        25,
+        27,
+        231,
+        229
+      ],
+      "fullyTransparent": 25912,
+      "fullyOpaque": 38360,
+      "edgesClear": true,
+      "centerOpaque": true,
+      "sha256": "1d63f811bb54ae2938bef2df73b55c1ddee7fb2cfcbc4e2d76afe2121c8a9929"
+    },
+    {
+      "file": "MicFirst/Assets.xcassets/AppIcon.appiconset/icon_256x256.png",
+      "pixels": 256,
+      "mode": "RGBA",
+      "alphaBounds": [
+        25,
+        27,
+        231,
+        229
+      ],
+      "fullyTransparent": 25912,
+      "fullyOpaque": 38360,
+      "edgesClear": true,
+      "centerOpaque": true,
+      "sha256": "1d63f811bb54ae2938bef2df73b55c1ddee7fb2cfcbc4e2d76afe2121c8a9929"
+    },
+    {
+      "file": "MicFirst/Assets.xcassets/AppIcon.appiconset/icon_256x256@2x.png",
+      "pixels": 512,
+      "mode": "RGBA",
+      "alphaBounds": [
+        50,
+        55,
+        462,
+        457
+      ],
+      "fullyTransparent": 104498,
+      "fullyOpaque": 154955,
+      "edgesClear": true,
+      "centerOpaque": true,
+      "sha256": "65369860e18cc83aa4e0a6fbf792d9aa278dc7a975b0c984502f3e56976e4943"
+    },
+    {
+      "file": "MicFirst/Assets.xcassets/AppIcon.appiconset/icon_512x512.png",
+      "pixels": 512,
+      "mode": "RGBA",
+      "alphaBounds": [
+        50,
+        55,
+        462,
+        457
+      ],
+      "fullyTransparent": 104498,
+      "fullyOpaque": 154955,
+      "edgesClear": true,
+      "centerOpaque": true,
+      "sha256": "65369860e18cc83aa4e0a6fbf792d9aa278dc7a975b0c984502f3e56976e4943"
+    },
+    {
+      "file": "MicFirst/Assets.xcassets/AppIcon.appiconset/icon_512x512@2x.png",
+      "pixels": 1024,
+      "mode": "RGBA",
+      "alphaBounds": [
+        100,
+        110,
+        924,
+        914
+      ],
+      "fullyTransparent": 417968,
+      "fullyOpaque": 623741,
+      "edgesClear": true,
+      "centerOpaque": true,
+      "sha256": "6198115ddf5ad4217b2f74f3559148d06a77428fd7384d34521ca764c2c5f3b7"
+    }
+  ],
+  "masterCopiesMatch": true,
+  "duplicatePixelSizesMatch": true,
+  "repeatExportByteIdentical": true,
+  "compiledCatalogSlots": [
+    {
+      "RenditionName": "icon_16x16.png",
+      "PixelWidth": 16,
+      "PixelHeight": 16,
+      "Scale": 1,
+      "Opaque": false
+    },
+    {
+      "RenditionName": "icon_16x16@2x.png",
+      "PixelWidth": 32,
+      "PixelHeight": 32,
+      "Scale": 2,
+      "Opaque": false
+    },
+    {
+      "RenditionName": "icon_32x32.png",
+      "PixelWidth": 32,
+      "PixelHeight": 32,
+      "Scale": 1,
+      "Opaque": false
+    },
+    {
+      "RenditionName": "icon_32x32@2x.png",
+      "PixelWidth": 64,
+      "PixelHeight": 64,
+      "Scale": 2,
+      "Opaque": false
+    },
+    {
+      "RenditionName": "icon_128x128.png",
+      "PixelWidth": 128,
+      "PixelHeight": 128,
+      "Scale": 1,
+      "Opaque": false
+    },
+    {
+      "RenditionName": "icon_128x128@2x.png",
+      "PixelWidth": 256,
+      "PixelHeight": 256,
+      "Scale": 2,
+      "Opaque": false
+    },
+    {
+      "RenditionName": "icon_256x256.png",
+      "PixelWidth": 256,
+      "PixelHeight": 256,
+      "Scale": 1,
+      "Opaque": false
+    },
+    {
+      "RenditionName": "icon_256x256@2x.png",
+      "PixelWidth": 512,
+      "PixelHeight": 512,
+      "Scale": 2,
+      "Opaque": false
+    },
+    {
+      "RenditionName": "icon_512x512.png",
+      "PixelWidth": 512,
+      "PixelHeight": 512,
+      "Scale": 1,
+      "Opaque": false
+    },
+    {
+      "RenditionName": "icon_512x512@2x.png",
+      "PixelWidth": 1024,
+      "PixelHeight": 1024,
+      "Scale": 2,
+      "Opaque": false
+    }
+  ],
+  "compiledICNSExtractedChecks": [
+    {
+      "file": "icon_128x128.png",
+      "alphaMatches": true,
+      "opaquePixelsMatch": true,
+      "allPixelsMatch": true
+    },
+    {
+      "file": "icon_128x128@2x.png",
+      "alphaMatches": true,
+      "opaquePixelsMatch": true,
+      "allPixelsMatch": true
+    },
+    {
+      "file": "icon_16x16.png",
+      "alphaMatches": true,
+      "opaquePixelsMatch": true,
+      "allPixelsMatch": false
+    },
+    {
+      "file": "icon_16x16@2x.png",
+      "alphaMatches": true,
+      "opaquePixelsMatch": true,
+      "allPixelsMatch": true
+    }
+  ],
+  "compiledICNSNote": "iconutil extracted four legacy representations. The 16px representation preserves alpha and opaque RGB but changes RGB on partially transparent pixels; all other extracted representations are pixel-identical. Assets.car contains all ten AppIcon entries.",
+  "releaseMinimumOS": "13.0",
+  "debugPreviewBuild": "passed; isolated preview launched",
+  "universalReleaseBuild": "passed: arm64, x86_64",
+  "buildWarnings": 0
+}

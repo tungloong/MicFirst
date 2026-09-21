@@ -1,0 +1,62 @@
+{
+  "clearAlphaAtOrBelow" : 8,
+  "colorSpace" : "sRGB",
+  "exports" : [
+    {
+      "path" : "MicFirst\/Assets.xcassets\/AppIcon.appiconset\/icon_16x16.png",
+      "pixels" : 16
+    },
+    {
+      "path" : "MicFirst\/Assets.xcassets\/AppIcon.appiconset\/icon_16x16@2x.png",
+      "pixels" : 32
+    },
+    {
+      "path" : "MicFirst\/Assets.xcassets\/AppIcon.appiconset\/icon_32x32.png",
+      "pixels" : 32
+    },
+    {
+      "path" : "MicFirst\/Assets.xcassets\/AppIcon.appiconset\/icon_32x32@2x.png",
+      "pixels" : 64
+    },
+    {
+      "path" : "MicFirst\/Assets.xcassets\/AppIcon.appiconset\/icon_128x128.png",
+      "pixels" : 128
+    },
+    {
+      "path" : "MicFirst\/Assets.xcassets\/AppIcon.appiconset\/icon_128x128@2x.png",
+      "pixels" : 256
+    },
+    {
+      "path" : "MicFirst\/Assets.xcassets\/AppIcon.appiconset\/icon_256x256.png",
+      "pixels" : 256
+    },
+    {
+      "path" : "MicFirst\/Assets.xcassets\/AppIcon.appiconset\/icon_256x256@2x.png",
+      "pixels" : 512
+    },
+    {
+      "path" : "MicFirst\/Assets.xcassets\/AppIcon.appiconset\/icon_512x512.png",
+      "pixels" : 512
+    },
+    {
+      "path" : "MicFirst\/Assets.xcassets\/AppIcon.appiconset\/icon_512x512@2x.png",
+      "pixels" : 1024
+    }
+  ],
+  "icns" : "docs\/design\/app-icon\/releases\/1.0\/MicFirst.icns",
+  "opaqueAlphaAtOrAbove" : 240,
+  "preserveAspectRatio" : true,
+  "source" : "docs\/design\/app-icon\/2026-09-21-porcelain-equalizer\/porcelain-equalizer-original.png",
+  "sourceAlphaBounds" : [
+    108,
+    122,
+    1144,
+    1132
+  ],
+  "sourceSHA256" : "bfc72768565784ef65fab52095cff1991b4f75fbbf24f9b3cd30831e2c72649f",
+  "sourceSize" : [
+    1254,
+    1254
+  ],
+  "tileLongestSideAt1024" : 824
+}
