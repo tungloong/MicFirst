@@ -75,6 +75,46 @@ struct HUDSystemMenuAnchor: Codable, Equatable {
     }
 }
 
+struct MenuBarWindowRecord: Equatable {
+    var frame: CGRect
+    var className: String
+}
+
+struct MenuBarScreenRecord: Equatable {
+    var frame: CGRect
+    var visibleFrame: CGRect
+}
+
+/// MicFirst's own menu-bar button, read from this process's status-bar window.
+enum OwnMenuBarButton {
+    static func frame(
+        among windows: [MenuBarWindowRecord],
+        on screens: [MenuBarScreenRecord],
+        near mouseLocation: CGPoint
+    ) -> CGRect? {
+        let candidates = windows.compactMap { window -> CGRect? in
+            guard window.className.contains("NSStatusBarWindow") else { return nil }
+            let frame = window.frame
+            guard [frame.minX, frame.minY, frame.width, frame.height].allSatisfy(\.isFinite),
+                  frame.width > 8, frame.width < 160, frame.height > 8, frame.height <= 40,
+                  screenFrame(containing: frame, screens: screens) != nil else { return nil }
+            return frame
+        }
+        guard !candidates.isEmpty else { return nil }
+        let mouseScreen = screens.first { $0.frame.contains(mouseLocation) }?.frame
+        let pool = candidates.filter { screenFrame(containing: $0, screens: screens) == mouseScreen }
+        let choices = pool.isEmpty ? candidates : pool
+        return choices.min { abs($0.midX - mouseLocation.x) < abs($1.midX - mouseLocation.x) }
+    }
+
+    private static func screenFrame(containing button: CGRect, screens: [MenuBarScreenRecord]) -> CGRect? {
+        screens.first {
+            $0.frame.insetBy(dx: -2, dy: -2).contains(CGPoint(x: button.midX, y: button.midY))
+                && $0.frame.maxY - button.midY <= 100
+        }?.frame
+    }
+}
+
 #if DEBUG
 /// The delivery ID stays the same across startup retries; only one snapshot is applied.
 struct HUDMenuAnchorSnapshot: Codable {

@@ -75,8 +75,10 @@ if [[ -z "$APP_PID" ]]; then
   exit 1
 fi
 if [[ "$CONFIGURATION" == "Debug" ]]; then
-  # A PID is not readiness. The helper retries startup geometry until the app
-  # acknowledges a usable own-button snapshot, or reports a bounded failure.
-  "$HELPER_PATH" --deliver "$APP_PID"
+  # The HUD anchors to MicFirst's own menu icon without this helper. The helper
+  # only supplies Sound and Control Center positions for collision avoidance.
+  if ! "$HELPER_PATH" --deliver "$APP_PID"; then
+    echo "Sound and Control Center positions were not delivered. The HUD still anchors to MicFirst's own menu icon." >&2
+  fi
 fi
 printf '%s\n' "$APP_PID"

@@ -8,6 +8,68 @@
     enum InputPriorityPreview {
         private static var window: NSWindow?
 
+        static func exportScreenshots(viewModel: AudioInputViewModel, to directory: URL) throws {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            viewModel.menuDidOpen()
+            try render(
+                SoundMenuView(viewModel: viewModel).background(.regularMaterial),
+                width: 308, minimumHeight: 320, to: directory.appendingPathComponent("menu.png"))
+            viewModel.settingsDidOpen()
+            try render(
+                InputPrioritySettingsView(viewModel: viewModel)
+                    .frame(width: 660, alignment: .top)
+                    .fixedSize(horizontal: true, vertical: true)
+                    .padding(24)
+                    .background(Color(nsColor: .windowBackgroundColor)),
+                width: 708, minimumHeight: 560, to: directory.appendingPathComponent("settings.png"))
+            if let hud = micFirstHUDReviewImage() {
+                try writePNG(hud, to: directory.appendingPathComponent("hud.png"))
+            }
+        }
+
+        private static func render<V: View>(_ view: V, width: CGFloat, minimumHeight: CGFloat, to url: URL) throws {
+            let host = NSHostingView(rootView: AnyView(view.environment(\.colorScheme, .light)))
+            host.frame = NSRect(x: 0, y: 0, width: width, height: minimumHeight)
+            let fitted = host.fittingSize
+            host.frame.size = NSSize(width: width, height: max(fitted.height, minimumHeight))
+            let window = NSWindow(
+                contentRect: host.frame, styleMask: [.borderless], backing: .buffered, defer: false)
+            window.isReleasedWhenClosed = false
+            window.isOpaque = false
+            window.backgroundColor = .windowBackgroundColor
+            window.contentView = host
+            window.setFrameOrigin(NSPoint(x: 40, y: 80))
+            window.orderFrontRegardless()
+            host.layoutSubtreeIfNeeded()
+            window.displayIfNeeded()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.35))
+            let settled = host.fittingSize
+            if settled.height > host.frame.height {
+                host.frame.size.height = settled.height
+                window.setContentSize(host.frame.size)
+            }
+            host.layoutSubtreeIfNeeded()
+            window.displayIfNeeded()
+            guard let rep = host.bitmapImageRepForCachingDisplay(in: host.bounds) else {
+                throw CocoaError(.coderInvalidValue)
+            }
+            host.cacheDisplay(in: host.bounds, to: rep)
+            guard let data = rep.representation(using: .png, properties: [:]) else {
+                throw CocoaError(.coderInvalidValue)
+            }
+            try data.write(to: url)
+            window.orderOut(nil)
+        }
+
+        private static func writePNG(_ image: NSImage, to url: URL) throws {
+            guard let tiff = image.tiffRepresentation,
+                  let rep = NSBitmapImageRep(data: tiff),
+                  let data = rep.representation(using: .png, properties: [:]) else {
+                throw CocoaError(.coderInvalidValue)
+            }
+            try data.write(to: url)
+        }
+
         static func showWindow(viewModel: AudioInputViewModel) {
             if ProcessInfo.processInfo.arguments.contains("--hud-preview") {
                 viewModel.showHUDPreview()
@@ -27,8 +89,8 @@
         }
 
         static func makeViewModel() -> AudioInputViewModel {
-            let defaults = UserDefaults(suiteName: "com.tungloong.AudioInputLocker.PriorityPreview")!
-            defaults.removePersistentDomain(forName: "com.tungloong.AudioInputLocker.PriorityPreview")
+            let defaults = UserDefaults(suiteName: "com.tenglong.MicFirst.PriorityPreview")!
+            defaults.removePersistentDomain(forName: "com.tenglong.MicFirst.PriorityPreview")
             var dateOffset: TimeInterval = ProcessInfo.processInfo.arguments.contains("--expired-offline") ? -301 : 0
             let store = InputPriorityStore(defaults: defaults, now: { Date().addingTimeInterval(dateOffset) })
             let manager = PreviewAudioManager()

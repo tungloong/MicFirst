@@ -42,12 +42,34 @@ final class MicFirstAppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        #if DEBUG
+        let arguments = ProcessInfo.processInfo.arguments
+        if let index = arguments.firstIndex(of: "--export-screenshots"), index + 1 < arguments.count {
+            var directory = URL(fileURLWithPath: arguments[index + 1], isDirectory: true)
+            do {
+                do {
+                    try InputPriorityPreview.exportScreenshots(viewModel: viewModel, to: directory)
+                } catch {
+                    directory = FileManager.default.temporaryDirectory
+                        .appendingPathComponent("MicFirstScreenshots", isDirectory: true)
+                        .appendingPathComponent(directory.lastPathComponent, isDirectory: true)
+                    try InputPriorityPreview.exportScreenshots(viewModel: viewModel, to: directory)
+                }
+                fputs("exported \(directory.path)\n", stderr)
+            } catch {
+                fputs("screenshot export failed: \(error)\n", stderr)
+                exit(1)
+            }
+            exit(0)
+        }
+        #endif
         let controller = statusController
         PreferredInputHUD.shared.anchorProvider = controller
         controller.anchorChanged = { [weak self] in
             PreferredInputHUD.shared.anchorDidChange()
             self?.showPreviewIfReady()
         }
+        controller.start()
         #if DEBUG
         let receiver = HUDMenuAnchorReceiver { [weak controller] anchors in
             guard let controller, controller.update(anchors) else { return false }
@@ -77,6 +99,7 @@ final class MicFirstAppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         PreferredInputHUD.shared.dismissForMenuOpening()
+        statusController.stop()
         #if DEBUG
         HUDDiagnostics.shared.stop()
         menuAnchorReceiver?.stop()

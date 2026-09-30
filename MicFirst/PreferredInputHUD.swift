@@ -422,6 +422,27 @@ final class HUDGlassAppearanceSession {
     }
 }
 
+#if DEBUG
+@MainActor
+func micFirstHUDReviewImage() -> NSImage? {
+    let view = PreferredInputHUDView(
+        deviceName: "DJI Mic Mini · USB",
+        detail: NSLocalizedString("Input Priority On", comment: "HUD automatic input status"),
+        hoverChanged: { _ in },
+        close: {},
+        unlock: {},
+        lock: {}
+    )
+    .padding(28)
+    .background(Color(nsColor: .windowBackgroundColor))
+    .environment(\.colorScheme, .light)
+    let renderer = ImageRenderer(content: view)
+    renderer.scale = 4
+    renderer.proposedSize = ProposedViewSize(width: 420, height: 220)
+    return renderer.nsImage
+}
+#endif
+
 private struct PreferredInputHUDView: View {
     static let windowSize = NSSize(width: 360, height: 136)
     static let capsuleSize = CGSize(width: 235, height: 52)

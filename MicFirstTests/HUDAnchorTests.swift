@@ -179,6 +179,54 @@ final class HUDHorizontalPlacementTests: XCTestCase {
         let center: CGFloat = 1000 - 235 - 12
         XCTAssertEqual(place(center, system(1000)), own(center))
     }
+
+    func testMeasuredStatusBarWindowKeepsTheButtonCenter() throws {
+        let screen = CGRect(x: 0, y: 0, width: 1710, height: 1112)
+        let visible = CGRect(x: 0, y: 87, width: 1710, height: 987)
+        let button = CGRect(x: 1383, y: 1074, width: 34, height: 38)
+        let menu = CGRect(x: button.minX, y: visible.maxY, width: button.width, height: screen.maxY - visible.maxY)
+        let anchor = try XCTUnwrap(HUDAnchor(
+            buttonFrame: button, statusWindowFrame: menu, screenFrame: screen,
+            visibleScreenFrame: visible, backingScale: 2
+        ))
+        XCTAssertEqual(anchor.buttonFrame.midX, 1400, "The status-bar window center matches the Accessibility button")
+    }
+}
+
+final class OwnMenuBarButtonTests: XCTestCase {
+    private let builtIn = MenuBarScreenRecord(
+        frame: CGRect(x: 0, y: 0, width: 1710, height: 1112),
+        visibleFrame: CGRect(x: 0, y: 87, width: 1710, height: 987)
+    )
+    private let external = MenuBarScreenRecord(
+        frame: CGRect(x: 1710, y: 0, width: 1920, height: 1080),
+        visibleFrame: CGRect(x: 1710, y: 80, width: 1920, height: 960)
+    )
+
+    func testChoosesTheStatusBarWindowOnTheMouseScreen() {
+        let builtInButton = MenuBarWindowRecord(frame: CGRect(x: 1383, y: 1074, width: 34, height: 38), className: "NSStatusBarWindow")
+        let externalButton = MenuBarWindowRecord(frame: CGRect(x: 3400, y: 1042, width: 34, height: 38), className: "NSStatusBarWindow")
+        let popup = MenuBarWindowRecord(frame: CGRect(x: 1100, y: 700, width: 308, height: 360), className: "MenuBarExtraWindow")
+        let hiddenReplica = MenuBarWindowRecord(frame: CGRect(x: 0, y: -38, width: 34, height: 38), className: "NSStatusBarWindow")
+        let windows = [popup, hiddenReplica, externalButton, builtInButton]
+        XCTAssertEqual(
+            OwnMenuBarButton.frame(among: windows, on: [builtIn, external], near: CGPoint(x: 800, y: 400)),
+            builtInButton.frame
+        )
+        XCTAssertEqual(
+            OwnMenuBarButton.frame(among: windows, on: [builtIn, external], near: CGPoint(x: 2000, y: 400)),
+            externalButton.frame
+        )
+    }
+
+    func testIgnoresWindowsThatAreNotMenuBarButtons() {
+        let windows = [
+            MenuBarWindowRecord(frame: CGRect(x: 1383, y: 1074, width: 400, height: 38), className: "NSStatusBarWindow"),
+            MenuBarWindowRecord(frame: CGRect(x: 1383, y: 500, width: 34, height: 38), className: "NSStatusBarWindow"),
+            MenuBarWindowRecord(frame: CGRect(x: 1383, y: 1074, width: 34, height: 38), className: "NSWindow")
+        ]
+        XCTAssertNil(OwnMenuBarButton.frame(among: windows, on: [builtIn], near: CGPoint(x: 800, y: 400)))
+    }
 }
 
 @MainActor
