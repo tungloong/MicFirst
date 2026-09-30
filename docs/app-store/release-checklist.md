@@ -2,10 +2,9 @@
 
 ## App Store Connect
 
-- Create a macOS app record for `MicFirst`.
-- Keep the existing bundle ID `com.tungloong.AudioInputLocker` and use the
-  matching explicit App ID in the Apple Developer account. The MicFirst rename
-  preserves this identifier for continuity with existing installations.
+- Create a macOS app record for `MicFirst` with bundle ID `com.tenglong.MicFirst`.
+  Register that explicit App ID on the Apple Developer account.
+  `com.tungloong.AudioInputLocker` belongs to the retired AudioInputLocker product.
 - Price: Free.
 - Fill English and Simplified Chinese metadata from `docs/app-store/metadata.md`.
 - Validate a public MicFirst privacy-policy URL for submission. The current

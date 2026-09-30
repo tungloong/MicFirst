@@ -9,35 +9,38 @@ signal is assumed.
 ## Startup geometry
 
 SwiftUI owns the system `MenuBarExtra(.window)`. `StatusItemController` creates
-neither a status item nor a menu panel; it adapts a startup button snapshot for HUD
-placement. The earlier direct NSStatusItem/NSPopover experiment and the custom
-panel were replaced by the system menu.
+neither a status item nor a menu panel. It reads MicFirst's own button from this
+process's status-bar window whenever the HUD is presented. That read works in
+Debug, Release, and a sandboxed launch.
 
-In a Debug development run, `scripts/build-and-run.sh`:
+In a Debug development run, `scripts/build-and-run.sh` also runs
+`scripts/diagnostics/read-system-menu-anchors.swift` once:
 
-1. Builds the app and the retained `scripts/diagnostics/read-system-menu-anchors.swift` helper.
+1. Builds the app and the helper.
 2. Restarts MicFirst and waits up to 10 seconds for its process to appear.
-3. Runs one helper process, which waits for application launch and retries public
-   Accessibility geometry for Sound, Control Center and MicFirst's own menu button.
-4. Retries delivery at 250 ms intervals, within a 10-second deadline, until the app
-   acknowledges a snapshot containing a usable own-button anchor. Empty, invalid,
-   or temporarily unusable snapshots do not consume the receiver.
-5. Confirms receipt of that acknowledgement, then exits. The app removes its
+3. The helper waits for launch and retries public Accessibility geometry for
+   Sound, Control Center, and MicFirst's own menu button.
+4. It retries delivery at 250 ms intervals, within a 10-second deadline, until
+   the app acknowledges a snapshot containing a usable own-button anchor. Empty,
+   invalid, or temporarily unusable snapshots do not consume the receiver.
+5. It confirms receipt of that acknowledgement, then exits. The app removes its
    receiver after this confirmation, or after a 30-second startup deadline if
    the helper disappears. Repeated deliveries are acknowledged without replacing
    the accepted snapshot.
 
 The helper needs an already-authorized Accessibility execution context. It never
 prompts, changes settings, reads popup contents, or polls after startup delivery.
-Missing authorization, an exited app, or a delivery timeout produces a nonzero
-helper/script result with an explanation instead of reporting successful delivery.
-The app keeps the snapshot until it exits. Move/hide a relevant menu icon or change
-displays, then relaunch through the script to refresh the coordinates.
+If authorization is missing or delivery times out, the launch script warns and
+continues. The HUD still uses MicFirst's own status-bar window. The retained
+snapshot supplies Sound and Control Center positions for horizontal avoidance,
+and an own-button fallback only while that window is not available yet.
+Move or hide a system button, then relaunch through the script to refresh those
+system coordinates. MicFirst's own icon is read again at the next presentation.
 
-A direct app launch without the helper and the Release target currently lack the
-own-button snapshot, so the HUD is suppressed. Automatic microphone priority works
-independently. Production helper/permission integration remains pending; successful
-Release compilation does not establish standalone HUD functionality.
+App Sandbox cannot inspect other apps' menu buttons, so a shipped build places
+the HUD under MicFirst's own icon and does not claim separation from the system
+Sound banner. Automatic microphone priority works independently of both the
+helper and the HUD.
 
 For a persistent menu bar, the capsule's top is 9 pt below the work-area top.
 For an auto-hidden bar, the captured button bottom supplies the boundary; physical
@@ -70,7 +73,7 @@ seconds they sample public window metadata every 100 ms, writing changes plus a
 one-second heartbeat to a unique JSONL file under:
 
 ```text
-~/Library/Containers/com.tungloong.AudioInputLocker/Data/Library/Application Support/MicFirst/HUDDiagnostics/
+~/Library/Containers/com.tenglong.MicFirst/Data/Library/Application Support/MicFirst/HUDDiagnostics/
 ```
 
 This sampler is separate from startup button acquisition and appearance support;
@@ -83,7 +86,7 @@ UIDs. It makes no private service calls and requests no additional permission.
 
 | Field | Meaning |
 | --- | --- |
-| `anchor.buttonFrame` | MicFirst button rectangle from the startup public-AX snapshot |
+| `anchor.buttonFrame` | MicFirst button rectangle from its own status-bar window, or the startup snapshot when that window is not available yet |
 | `anchor.statusWindowFrame` | Menu-region rectangle derived from the snapshot and current screen work area; not a foreign NSWindow frame |
 | `systemMenuAnchors` | Validated startup menu-button snapshots |
 | `hud.hostFrame` / `hud.capsuleFrame` | Actual own-window geometry and visible capsule |

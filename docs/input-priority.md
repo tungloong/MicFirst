@@ -75,26 +75,29 @@ existing installations. It persists in `inputPriorityPreferences.v1` independent
 of automatic input. Turning it off dismisses visible HUDs; turning it back on does
 not replay old events.
 
-**Current integration is a Debug startup snapshot.** `build-and-run.sh` invokes
-an external public-Accessibility helper once per launch/relaunch. Within a
-10-second deadline, it waits for launch, reads Sound/Control Center and MicFirst
-menu geometry, and retries delivery until the app acknowledges a usable own-button
-anchor. Invalid or incomplete snapshots leave the receiver open. Retries share a
-delivery ID so a lost acknowledgement can be repeated without applying the snapshot
-again. The helper confirms acknowledgement and exits; the app removes its receiver
-on confirmation, with a 30-second startup cleanup deadline for abandoned handshakes.
-Timeouts and unavailable authorization are reported by the launch script.
-The app retains the accepted snapshot for the process lifetime; there is no
-background coordinate helper, periodic refresh, or snapshot expiration.
-Move/hide a system button or change displays, then relaunch
-through the script to refresh the snapshot. The own icon also uses the startup snapshot. No entitlement, private API, or permission prompt was added;
-the helper needs an already-authorized Accessibility execution context.
+**Own icon.** The HUD reads MicFirst's menu-bar button from this process's
+status-bar window at presentation time. Debug, Release, and a sandboxed launch
+all use that frame, so the HUD no longer depends on an external helper to appear.
+Moving the menu icon is picked up on the next presentation. No entitlement,
+private API, or permission prompt is used.
 
-A standalone app launch without the helper, and the Release target, currently
-lack the own-button snapshot and therefore suppress HUD presentation. A supported production helper/permission architecture
-is still an explicit follow-up decision; don't represent the development bridge
-as production AX access from a sandboxed app. See [native HUD investigation](native-hud-investigation.md)
-for the closed native-visibility experiments.
+**System-banner avoidance is a Debug snapshot.** `build-and-run.sh` still invokes
+an external public-Accessibility helper once per Debug launch. Within a
+10-second deadline it reads Sound and Control Center geometry, plus MicFirst's
+own button as a fallback, and retries until the app acknowledges a usable
+own-button anchor. Invalid or incomplete snapshots leave the receiver open.
+Retries share a delivery ID so a lost acknowledgement can be repeated without
+applying the snapshot again. The helper confirms acknowledgement and exits; the
+app removes its receiver on confirmation, with a 30-second startup cleanup
+deadline for abandoned handshakes. The helper needs an already-authorized
+Accessibility execution context. If it cannot deliver, the launch script warns
+and the HUD still anchors to MicFirst's own icon.
+
+App Sandbox cannot inspect other apps' menu buttons, so a shipped build does not
+claim separation from the system Sound banner. The Debug helper must not be
+described as production Accessibility access from the sandboxed app. See
+[native HUD investigation](native-hud-investigation.md) for the closed
+native-visibility experiments.
 
 The HUD uses a borderless `NSWindow` at `NSWindow.Level.popUpMenu + 1`, above
 ordinary pop-up menus, and refuses actual key/main status. On macOS 26+, each
@@ -124,11 +127,9 @@ An already-offline historical device with no known disconnect time starts collap
 Reconnection clears the timestamp. One scheduled refresh updates open views at the
 next expiry even when Core Audio sends no new event.
 
-An existing preferred UID is migrated to the first position even when offline.
-Its previous enabled state is preserved. A previously unlocked installation stays
-manual. Fresh installations start enabled, with the current system input first.
-Subsequent discoveries append without changing existing positions. Legacy keys
-are left intact for compatibility but ignored after migration.
+Fresh installations start enabled, with the current system input first.
+Subsequent discoveries append without changing existing positions. MicFirst
+reads only `inputPriorityPreferences.v1`. AudioInputLocker lock keys are ignored.
 
 USB and Bluetooth connections have independent UIDs and positions. Identical
 names receive a USB/Bluetooth suffix in the menu; original device names are retained.
@@ -142,7 +143,7 @@ names receive a USB/Bluetooth suffix in the menu; original device names are reta
 - `ReorderableInputList.swift`: shared UID-based drag behavior, scroll handling, and hover visibility.
 - `PreferredInputHUD.swift`: the existing glass HUD and its presentation lifecycle.
 - `HUDPlacement.swift`: horizontal collision avoidance and visible-capsule screen clamping.
-- `StatusItemController.swift` / `HUDAnchor.swift`: startup menu-button anchor validation and HUD geometry.
+- `StatusItemController.swift` / `HUDAnchor.swift`: own menu-button geometry and HUD placement.
 - `NativeHUDProbe.swift` / `HUDDiagnostics.swift`: read-only candidate evidence and
   opt-in, time-bounded Debug logging; no verified native visibility channel yet.
 - `InputPriorityPreview.swift`: Debug-only simulated UI; no system audio writes.

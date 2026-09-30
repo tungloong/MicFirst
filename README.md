@@ -47,7 +47,7 @@ Signed and notarized distribution and Mac App Store validation remain future wor
 - Provides Settings with the full numbered priority list, menu visibility controls, and offline deletion.
 - Excludes manually hidden devices from automatic selection.
 - Turns automatic mode off for manual selections while preserving the order.
-- Shows a configurable transient HUD after confirming an automatic restoration. Until the first Developer ID direct download exists, that build presents no HUD; the Debug startup snapshot is still required for HUD placement.
+- Shows a configurable transient HUD after confirming an automatic restoration. The HUD anchors to MicFirst's own menu icon in Debug and Release. It can be turned off in Settings.
 - Supports English and Simplified Chinese, following the system language.
 
 ## Requirements
@@ -77,11 +77,12 @@ The script builds the Debug app, stops any running `MicFirst` and
 `AudioInputLocker` processes, and opens the freshly built MicFirst app from
 `build/DerivedData`.
 
-The current Debug script also acquires a menu-button snapshot through a public
-Accessibility helper in an already-authorized execution context. Startup delivery
-retries for up to 10 seconds until the app acknowledges a usable snapshot. HUD presentation
-currently depends on this startup snapshot; standalone/Release launch integration
-remains unfinished. Automatic microphone priority works independently. See
+The HUD anchors to MicFirst's own menu icon without an external helper. The
+Debug script also asks a public Accessibility helper for Sound and Control
+Center positions so the HUD can move aside from the system banner. That helper
+needs an already-authorized Accessibility context. If it cannot deliver, the
+script warns and the HUD still uses MicFirst's own icon. Shipped builds do not
+read other apps' menu buttons. See
 [HUD behavior and limits](docs/input-priority.md).
 
 Manual build:
@@ -122,10 +123,8 @@ use the highest-priority available input. There is no countdown or timed resume.
 External changes while automatic mode is on are restored. If all inputs are offline,
 the mode stays on and waits for one to return.
 
-When existing AudioInputLocker preferences are present, its previous locked
-device is placed first, even if offline. Disabled or explicitly unlocked
-installations stay manual. A fresh installation starts in
-automatic mode with the current system input at the top.
+A fresh installation starts in automatic mode with the current system input
+at the top. MicFirst does not import AudioInputLocker preferences.
 
 ## Localization
 

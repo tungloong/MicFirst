@@ -14,10 +14,12 @@ list, automatic fallback, and a full Settings device list. Its repository is
 current MicFirst source snapshot with independent commit and release history.
 AudioInputLocker's release tags and binaries are not MicFirst releases.
 
-The app's existing bundle identifier and preference format remain unchanged in
-this repository split to preserve the already-tested local configuration.
-The two apps currently share an application identity and should not run at the
-same time. See [compatibility details](micfirst-rename.md).
+The 2026-09-07 split kept `com.tungloong.AudioInputLocker` so the local
+configuration under test could keep running. That identifier belongs to
+AudioInputLocker. MicFirst's bundle identifier is `com.tenglong.MicFirst`;
+see the 2026-09-23 decision. Quit AudioInputLocker before running MicFirst so
+the two apps do not both change the system input. See
+[compatibility details](micfirst-rename.md).
 
 The checkout directory name is independent of the app, project, and repository
 names. A directory named `AudioInputLocker` still builds `MicFirst.app` because
@@ -45,3 +47,15 @@ omit the recurring one-second appearance timer. Retire the temporary tint and
 background-material controls. This closes the material exploration; exact system
 AirPods rendering is not a requirement for this accepted recipe. See
 [current HUD behavior](input-priority.md) for implementation and integration limits.
+
+## 2026-09-23 — Distribution identity
+
+MicFirst ships as source on GitHub, with a notarized DMG in GitHub Releases for
+direct install, and as a free Mac App Store download for people who install
+from the store. Both binaries use bundle ID `com.tenglong.MicFirst`, the same
+`com.tenglong.*` account prefix as BetterNotch.
+
+`com.tungloong.AudioInputLocker` stays with the retired AudioInputLocker product.
+MicFirst does not use it. The preference key inside the app stays
+`inputPriorityPreferences.v1`. No public MicFirst binary has shipped, so there
+is no released preference domain to migrate.

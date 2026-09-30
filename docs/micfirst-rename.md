@@ -12,15 +12,16 @@ products. The current repository arrangement is documented in
 | App / executable | `MicFirst.app` / `MicFirst` |
 | Project / shared scheme | `MicFirst.xcodeproj` / `MicFirst` |
 | App source / tests | `MicFirst/` / `MicFirstTests/` |
-| App bundle identifier | `com.tungloong.AudioInputLocker` (preserved) |
+| App bundle identifier | `com.tungloong.AudioInputLocker` (preserved at this rename; replaced on 2026-09-23) |
 | Saved priority key | `inputPriorityPreferences.v1` (preserved) |
-| Debug preview preference suite | `com.tungloong.AudioInputLocker.PriorityPreview` (isolated, preserved) |
+| Debug preview preference suite | `com.tungloong.AudioInputLocker.PriorityPreview` (isolated at this rename; now `com.tenglong.MicFirst.PriorityPreview`) |
 | Debug HUD notification | `MicFirst.ShowPreferredInputHUD` |
 
-Keeping the bundle identifier and preference format preserves the existing
-preference domain, including remembered devices, priority order, automatic mode,
-menu visibility, and legacy lock migration. Do not replace the bundle identifier
-as a cosmetic cleanup. No preference copy or reset is needed for this rename.
+The rename itself kept the then-current bundle identifier and preference format.
+The bundle identifier was replaced on 2026-09-23; see
+[product decisions](product-decisions.md). MicFirst does not import
+AudioInputLocker lock settings. The preference key
+`inputPriorityPreferences.v1` is unchanged.
 
 `./scripts/build-and-run.sh` builds MicFirst and stops both the previous
 `AudioInputLocker` process and any existing `MicFirst` process before launching

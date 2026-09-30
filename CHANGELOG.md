@@ -16,17 +16,17 @@ its release history remains in [its repository](https://github.com/tungloong/Aud
   together when hovering over the list.
 - Refined the restoration HUD with clear Liquid Glass over Popover material at
   0.80 opacity, system-accent controls, and a persistent Settings visibility switch.
-- Added horizontal HUD avoidance using Sound/Control Center menu-button snapshots;
-  the sandboxed development helper acquires a startup snapshot with bounded retries
-  and acknowledgement, so slow launch or incomplete geometry cannot silently consume
-  the only delivery. Standalone
-  HUD integration remains pending.
+- Anchor the restoration HUD to MicFirst's own menu-bar window so Debug, Release,
+  and sandboxed launches can present it without an Accessibility helper. The Debug
+  helper still supplies Sound and Control Center positions for horizontal avoidance.
 - Preserve the system MenuBarExtra window and event-triggered glass appearance
   refreshes without recurring one-second appearance maintenance.
 - Included English and Simplified Chinese, isolated UI previews, and HUD/route regressions.
 - Retired one-off native-HUD probes and tint/material experiments after recording
   their outcomes.
-- Preserved existing local configuration compatibility identifiers.
+- Use bundle ID `com.tenglong.MicFirst` for GitHub and Mac App Store packages.
+  Ignore retired AudioInputLocker lock preferences. Keep the preference key
+  `inputPriorityPreferences.v1`.
 - Recorded the 2026-09-07 decision not to pursue multi-microphone mixing/fusion
   in the near term; see [product decisions](docs/product-decisions.md).
 

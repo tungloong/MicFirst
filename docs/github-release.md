@@ -63,8 +63,17 @@ version output is not overwritten. The script does not upload artifacts.
 
 Before publication, validate the mounted DMG and copied app, confirm GitHub CI
 passes for the release commit, and record any remaining runtime limitations.
-Standalone Release currently suppresses the HUD because its startup anchor
-source is not integrated; signing does not change that behavior. Do not describe
-that notification feature as working in a downloadable build until verified.
-The signing and notarization stages have not yet been exercised with a Developer
-ID identity on this machine.
+The HUD anchors to MicFirst's own menu icon in a Release build. It does not
+read other apps' menu buttons, so it does not claim separation from the system
+Sound banner. The signing and notarization stages have not yet been exercised
+with a Developer ID identity on this machine: the account has Apple Distribution
+and a Mac Installer Distribution certificate, and no Developer ID Application
+certificate.
+
+## Mac App Store package
+
+`./scripts/package-app-store-release.sh 1.0.0 1` archives `com.tenglong.MicFirst`
+with the Apple Distribution identity and exports a local installer package.
+It does not upload or submit. The bundle ID must be `com.tenglong.MicFirst`.
+`com.tungloong.AudioInputLocker` is the retired product and is rejected by the
+packaging scripts.
