@@ -37,9 +37,10 @@ struct MenuAnchorReader {
         let screens = NSScreen.screens
         let primaryMaxY = screens.first(where: { $0.frame.origin == .zero })?.frame.maxY ?? 0
         var anchors: [Anchor] = []
-        for bundle in ["com.apple.controlcenter", "com.apple.MenuBarAgent", "com.apple.systemuiserver", "com.tungloong.AudioInputLocker"] {
+        let micFirstBundleID = "com.tenglong.MicFirst"
+        for bundle in ["com.apple.controlcenter", "com.apple.MenuBarAgent", "com.apple.systemuiserver", micFirstBundleID] {
             for app in NSRunningApplication.runningApplications(withBundleIdentifier: bundle) {
-                if bundle == "com.tungloong.AudioInputLocker", let targetPID, app.processIdentifier != targetPID { continue }
+                if bundle == micFirstBundleID, let targetPID, app.processIdentifier != targetPID { continue }
                 let root = AXUIElementCreateApplication(app.processIdentifier)
                 for name in [kAXMenuBarAttribute, kAXExtrasMenuBarAttribute] {
                     guard let value = attribute(root, name), CFGetTypeID(value) == AXUIElementGetTypeID() else { continue }

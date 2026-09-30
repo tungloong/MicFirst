@@ -29,7 +29,7 @@ final class HUDDiagnostics {
         let snapshot: Snapshot
     }
 
-    private let logger = Logger(subsystem: "com.tungloong.AudioInputLocker", category: "HUDDiagnostics")
+    private let logger = Logger(subsystem: "com.tenglong.MicFirst", category: "HUDDiagnostics")
     private let writeQueue = DispatchQueue(label: "MicFirst.HUDDiagnostics.Write")
     private var file: FileHandle?
     private var timer: Timer?

@@ -2,6 +2,7 @@
 # Build a universal Developer ID app, notarize it, then produce a notarized DMG.
 set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+EXPECTED_BUNDLE_ID="com.tenglong.MicFirst"
 VERSION="${1:?Usage: SIGNING_IDENTITY='Developer ID Application: …' NOTARY_PROFILE=… ./scripts/package-signed-release.sh 1.0.0 [BUILD_NUMBER]}"
 BUILD_NUMBER="${2:-1}"
 : "${SIGNING_IDENTITY:?Set a Developer ID Application signing identity}"
@@ -10,6 +11,8 @@ BUILD_NUMBER="${2:-1}"
 [[ "$BUILD_NUMBER" =~ ^[1-9][0-9]*$ ]] || { echo 'Build number must be a positive integer' >&2; exit 1; }
 [[ "$SIGNING_IDENTITY" == 'Developer ID Application: '* ]] || { echo 'Direct distribution requires Developer ID Application' >&2; exit 1; }
 security find-identity -v -p codesigning | grep -F -- "\"$SIGNING_IDENTITY\"" >/dev/null || { echo 'Signing identity and private key are not available' >&2; exit 1; }
+BUNDLE_ID="$(xcodebuild -project "$ROOT_DIR/MicFirst.xcodeproj" -scheme MicFirst -configuration Release -showBuildSettings 2>/dev/null | awk -F ' = ' '/PRODUCT_BUNDLE_IDENTIFIER =/ { print $2; exit }')"
+[[ "$BUNDLE_ID" == "$EXPECTED_BUNDLE_ID" ]] || { echo "Refusing to package bundle ID '$BUNDLE_ID'. MicFirst uses $EXPECTED_BUNDLE_ID." >&2; exit 1; }
 # Validate stored credentials before spending time on the build. Never print secrets.
 xcrun notarytool history --keychain-profile "$NOTARY_PROFILE" >/dev/null
 DIST_DIR="$ROOT_DIR/dist/$VERSION"

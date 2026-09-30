@@ -128,26 +128,16 @@ final class InputPriorityTests: XCTestCase {
         XCTAssertEqual(restored.devices[2].name, "Device 1")
     }
 
-    func testLegacyLockMigratesEvenWhenOffline() {
+    func testRetiredLockKeysDoNotSeedThePriorityList() {
         defaults.set("usb", forKey: "preferredInputDeviceUID")
         defaults.set("DJI Mic Mini", forKey: "preferredInputDeviceName")
         defaults.set(true, forKey: "inputLockEnabled")
         let store = InputPriorityStore(defaults: defaults)
         store.observe([device(2, current: true)])
-        XCTAssertEqual(store.devices.map(\.uid), ["usb", "2"])
+        XCTAssertEqual(store.devices.map(\.uid), ["2"])
         XCTAssertTrue(store.isEnabled)
-        XCTAssertEqual(store.preferredDevice(in: [device(2)])?.uid, "2")
-        store.removeOfflineDevice(uid: "usb", onlineDevices: [device(2)])
-        XCTAssertEqual(InputPriorityStore(defaults: defaults).devices.map(\.uid), ["2"])
-    }
-
-    func testLegacyDisabledOrUnlockedIntentStaysManual() {
-        defaults.set("1", forKey: "preferredInputDeviceUID")
         defaults.set(false, forKey: "inputLockEnabled")
-        XCTAssertFalse(InputPriorityStore(defaults: defaults).isEnabled)
-        defaults.removeObject(forKey: "preferredInputDeviceUID")
-        defaults.set(true, forKey: "inputLockEnabled")
-        XCTAssertFalse(InputPriorityStore(defaults: defaults).isEnabled)
+        XCTAssertTrue(InputPriorityStore(defaults: defaults).isEnabled)
     }
 
     func testRemovedDeviceReturnsAtBottomAndOnlineDeviceCannotBeRemoved() {

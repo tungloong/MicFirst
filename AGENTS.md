@@ -17,8 +17,9 @@ available microphone selected. Use SwiftUI, AppKit, and Core Audio.
 - Source: `MicFirst/`; tests: `MicFirstTests/`; current behavior: `docs/input-priority.md`.
 - Update both `en.lproj` and `zh-Hans.lproj` for user-facing strings.
 - Keep menus and Settings close to native macOS controls and concise wording.
-- The retained bundle ID `com.tungloong.AudioInputLocker` and preference key
-  `inputPriorityPreferences.v1` are intentional compatibility identifiers.
+- Bundle ID is `com.tenglong.MicFirst`. The preference key
+  `inputPriorityPreferences.v1` stays. `com.tungloong.AudioInputLocker` belongs
+  to the retired AudioInputLocker product.
 - MicFirst currently does not capture, process, or transmit audio samples.
 - Do not commit build products, local preferences, credentials, or user data.
 

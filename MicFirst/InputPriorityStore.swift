@@ -98,23 +98,9 @@ final class InputPriorityStore {
                 showsHUD: saved.showsHUD
             )
         } else {
-            let legacyUID = defaults.string(forKey: "preferredInputDeviceUID").flatMap { $0.isEmpty ? nil : $0 }
-            let legacyEnabled = defaults.object(forKey: "inputLockEnabled") as? Bool
-            let hasPreviousPreferences = legacyEnabled != nil || defaults.object(forKey: Self.preferencesKey) != nil
-            // Preserve an existing lock, including an offline target. An explicitly unlocked
-            // installation stays manual; a fresh installation starts with its current input first.
-            preferences = Preferences(
-                isEnabled: legacyUID != nil ? (legacyEnabled ?? true) : !hasPreviousPreferences,
-                devices: legacyUID.map {
-                    [
-                        RememberedInputDevice(
-                            uid: $0,
-                            name: defaults.string(forKey: "preferredInputDeviceName")
-                                ?? NSLocalizedString("Unknown Input Device", comment: "Fallback input device name")
-                        )
-                    ]
-                } ?? []
-            )
+            // AudioInputLocker lock keys are a retired product's configuration.
+            // A MicFirst install starts from its own priority list.
+            preferences = Preferences(isEnabled: true, devices: [])
         }
     }
 
