@@ -30,7 +30,9 @@ xcodebuild -project "$ROOT_DIR/MicFirst.xcodeproj" -scheme MicFirst \
   ENABLE_HARDENED_RUNTIME=YES OTHER_CODE_SIGN_FLAGS='--timestamp' build
 
 ditto "$DERIVED_DATA/Build/Products/Release/MicFirst.app" "$APP"
-lipo "$APP/Contents/MacOS/MicFirst" -verify_arch arm64 x86_64
+# Some lipo versions accept only one architecture per -verify_arch.
+lipo "$APP/Contents/MacOS/MicFirst" -verify_arch arm64
+lipo "$APP/Contents/MacOS/MicFirst" -verify_arch x86_64
 codesign --verify --deep --strict --verbose=2 "$APP"
 codesign -d --verbose=4 "$APP" 2> "$DIST_DIR/signature.txt"
 grep -F "Authority=$SIGNING_IDENTITY" "$DIST_DIR/signature.txt" >/dev/null
