@@ -58,3 +58,7 @@ swift scripts/export-app-icon.swift
 ## Historical Assets
 
 `docs/assets/audio-input-locker-app-icon-256.png` 保留旧版白色麦克风与金色挂锁设计，供历史 AudioInputLocker 页面引用。未使用的旧 1024px 主图与未选中的 MicFirst 候选已按用户要求清理。现役 AppIcon 和中英文 README 使用 MicFirst 新图标。
+
+## README Screenshots
+
+`docs/assets/screenshots/micfirst-{menu,settings,hud}-{en,zh}.png` 是中英文 README 和 GitHub Release 使用的现役截图。它们由 Debug 构建的 `--priority-preview --export-screenshots <目录>` 用模拟设备离屏渲染，不含真实设备名或桌面内容。同目录下的 `menu-popover.png` 与 `restore-hud.png` 是 AudioInputLocker 的历史截图，不代表 MicFirst 界面。

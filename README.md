@@ -28,6 +28,18 @@ menu for microphones and other input devices. MicFirst fills that gap
 with a Sound-style input menu. Put your microphones in priority order; the app
 uses the first available device and restores it after external route changes.
 
+<p align="center">
+  <img src="docs/assets/screenshots/micfirst-menu-en.png" width="308" alt="MicFirst menu with the input priority list">
+</p>
+
+<p align="center">
+  <img src="docs/assets/screenshots/micfirst-hud-en.png" width="360" alt="HUD shown after MicFirst restores the preferred input">
+</p>
+
+<p align="center">
+  <img src="docs/assets/screenshots/micfirst-settings-en.png" width="640" alt="MicFirst Settings with the numbered priority list">
+</p>
+
 ## Status and Installation
 
 MicFirst 1.0.0 is available in two ways:

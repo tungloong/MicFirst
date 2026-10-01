@@ -22,6 +22,18 @@ MicFirst 是围绕麦克风优先级设计的独立产品，源自已经完成�
 
 macOS 已经有一个原生风格的声音输出菜单，但没有一个同样顺手的麦克风和输入设备菜单。MicFirst 补上了这块空白：它提供一个接近系统声音菜单的输入设备菜单，并按你排列的优先级选择可用麦克风，在 macOS 或其他 app 尝试切走输入设备时自动恢复。
 
+<p align="center">
+  <img src="docs/assets/screenshots/micfirst-menu-zh.png" width="308" alt="MicFirst 菜单中的输入优先级列表">
+</p>
+
+<p align="center">
+  <img src="docs/assets/screenshots/micfirst-hud-zh.png" width="360" alt="MicFirst 自动恢复首选输入后显示的 HUD">
+</p>
+
+<p align="center">
+  <img src="docs/assets/screenshots/micfirst-settings-zh.png" width="640" alt="MicFirst 设置中带编号的优先级列表">
+</p>
+
 ## 当前状态与安装
 
 MicFirst 1.0.0 有两种安装方式：
