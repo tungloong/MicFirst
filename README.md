@@ -29,15 +29,19 @@ with a Sound-style input menu. Put your microphones in priority order; the app
 uses the first available device and restores it after external route changes.
 
 <p align="center">
-  <img src="docs/assets/screenshots/micfirst-menu-en.png" width="308" alt="MicFirst menu with the input priority list">
+  <img src="docs/assets/screenshots/store-en-01.png" width="720" alt="MicFirst menu bar menu with the input priority list">
 </p>
 
 <p align="center">
-  <img src="docs/assets/screenshots/micfirst-hud-en.png" width="360" alt="HUD shown after MicFirst restores the preferred input">
+  <img src="docs/assets/screenshots/store-en-02.png" width="720" alt="MicFirst switching back after AirPods take over the input">
 </p>
 
 <p align="center">
-  <img src="docs/assets/screenshots/micfirst-settings-en.png" width="640" alt="MicFirst Settings with the numbered priority list">
+  <img src="docs/assets/screenshots/store-en-03.png" width="720" alt="MicFirst Settings with the numbered priority list">
+</p>
+
+<p align="center">
+  <img src="docs/assets/screenshots/store-en-04.png" width="720" alt="MicFirst falling back to the next microphone when one is unplugged">
 </p>
 
 ## Status and Installation
