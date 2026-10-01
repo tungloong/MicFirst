@@ -20,7 +20,7 @@ Keywords (use this version; it avoids the "zoom" trademark):
 microphone,input,switcher,default,bluetooth,podcast,headset,usb,priority,auto,device,meeting,call
 
 Description:
-Your AirPods connect, and suddenly Zoom is using their tinny mic instead of the USB microphone on your desk. You notice five minutes into the call, or after the podcast is recorded.
+Your AirPods connect, and suddenly your video call is using their tinny mic instead of the USB microphone on your desk. You notice five minutes into the call, or after the podcast is recorded.
 
 MicFirst fixes that. Put your microphones in the order you want them, and MicFirst keeps the best available one selected as the Mac's default input.
 
