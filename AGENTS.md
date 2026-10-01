@@ -31,7 +31,8 @@ available microphone selected. Use SwiftUI, AppKit, and Core Audio.
 - Product decisions: `docs/product-decisions.md`.
 - As of 2026-09-07, do not pursue multi-microphone mixing/fusion or the research
   prototypes unless the user explicitly revisits that decision.
-- Current distribution is source-only; a signed/notarized release remains future work.
+- MicFirst 1.0.0 is published as a Developer ID signed and notarized DMG/ZIP on
+  GitHub Releases; see `docs/github-release.md` for the packaging steps.
 - Historical AudioInputLocker material is labelled as history, not current behavior.
 
 ## Web research

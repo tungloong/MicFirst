@@ -3,7 +3,7 @@
 - Repository: [tungloong/MicFirst](https://github.com/tungloong/MicFirst)
 - Product: microphone priorities with automatic fallback and route restoration.
 - License: MIT; original AudioInputLocker contributor attribution is retained.
-- Distribution: source-only until the first MicFirst binary is published.
+- Distribution: Developer ID signed and notarized DMG/ZIP on GitHub Releases, starting with 1.0.0.
 - Privacy policy: [docs/privacy.md](privacy.md).
 - No MicFirst website has been deployed. The AudioInputLocker website belongs to that product.
 
@@ -33,7 +33,7 @@ Creating and uploading this repository does not itself publish an app binary.
 
 ## Developer ID distribution
 
-The first public installer is waiting for a **Developer ID Application**
+Downloads outside the Mac App Store need a **Developer ID Application**
 certificate with its private key and an Apple notarization credential profile.
 Apple Development and Apple Distribution certificates do not replace this
 identity for downloads outside the Mac App Store. Do not publish an unsigned
@@ -65,10 +65,10 @@ Before publication, validate the mounted DMG and copied app, confirm GitHub CI
 passes for the release commit, and record any remaining runtime limitations.
 The HUD anchors to MicFirst's own menu icon in a Release build. It does not
 read other apps' menu buttons, so it does not claim separation from the system
-Sound banner. The signing and notarization stages have not yet been exercised
-with a Developer ID identity on this machine: the account has Apple Distribution
-and a Mac Installer Distribution certificate, and no Developer ID Application
-certificate.
+Sound banner. MicFirst 1.0.0 (build 1) was packaged this way on 2026-10-01 and
+checked on a real install: menu, priority switching, and the restoration HUD
+under the MicFirst icon. A team's first notarization can stay in progress for
+hours; later submissions finished in minutes.
 
 ## Mac App Store package
 

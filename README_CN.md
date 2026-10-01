@@ -20,12 +20,11 @@ macOS 已经有一个原生风格的声音输出菜单，但没有一个同样�
 
 ## 当前状态与安装
 
-MicFirst 当前源码使用 MIT License 发布，已实现下文的输入优先级功能。
-请按本页说明从源码构建运行，目前尚未发布 MicFirst 安装包。
+从 [MicFirst Releases](https://github.com/tungloong/MicFirst/releases/latest) 下载 MicFirst 1.0.0。
+打开 DMG，把 MicFirst 拖进“应用程序”即可。通用版本同时支持 Apple 芯片和 Intel，已用 Developer ID 签名并通过 Apple 公证。
 
-后续下载会发布在 [MicFirst Releases](https://github.com/tungloong/MicFirst/releases)。
+源码使用 MIT License 发布，也可以按本页说明从源码构建运行。
 AudioInputLocker 的现有下载属于它自己的产品。
-签名、公证和 Mac App Store 分发验证仍是后续工作。
 
 ## 功能
 
@@ -47,7 +46,7 @@ AudioInputLocker 的现有下载属于它自己的产品。
 - 运行环境：macOS 13.0 或更新版本。
 - 构建环境：带 macOS 26 SDK 的 Xcode。
 
-第一个公开二进制版本尚未发布，发布前需完成 Developer ID Application 签名与 Apple 公证。App 的部署目标是 macOS 13.0。HUD 会在可用时使用公开的 macOS 26 Liquid Glass API，并在旧系统上使用回退实现。
+App 的部署目标是 macOS 13.0。HUD 会在可用时使用公开的 macOS 26 Liquid Glass API，并在旧系统上使用回退实现。
 
 ## 构建与运行
 

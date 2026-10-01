@@ -26,13 +26,13 @@ uses the first available device and restores it after external route changes.
 
 ## Status and Installation
 
-The current MicFirst source is available under the MIT License and implements
-the priority workflow described below. Build and run it using the instructions
-in this README. No MicFirst binary release has been published yet.
+Download MicFirst 1.0.0 from [MicFirst Releases](https://github.com/tungloong/MicFirst/releases/latest).
+Open the DMG and drag MicFirst to Applications. The universal build (Apple
+silicon and Intel) is signed with Developer ID and notarized by Apple.
 
-Future downloads will appear in [MicFirst Releases](https://github.com/tungloong/MicFirst/releases).
+The source is available under the MIT License; you can also build and run it
+using the instructions in this README.
 AudioInputLocker's existing downloads belong to that separate product.
-Signed and notarized distribution and Mac App Store validation remain future work.
 
 ## Features
 
@@ -55,7 +55,7 @@ Signed and notarized distribution and Mac App Store validation remain future wor
 - macOS 13.0 or later at runtime.
 - Xcode with the macOS 26 SDK to build the current source.
 
-The first public binary is not published yet. Developer ID Application signing and Apple notarization are prerequisites. The app targets macOS 13.0. The HUD uses public macOS 26 Liquid Glass APIs when
+The app targets macOS 13.0. The HUD uses public macOS 26 Liquid Glass APIs when
 available and falls back on older systems.
 
 ## Build And Run

@@ -3,7 +3,9 @@
 Changes to MicFirst are recorded here. AudioInputLocker is a separate product;
 its release history remains in [its repository](https://github.com/tungloong/AudioInputLocker/releases).
 
-## Unreleased
+## 1.0.0 - 2026-10-01
+
+- First public release: universal Developer ID signed and notarized DMG and ZIP.
 
 - Established MicFirst as an independent product and source repository.
 - Added persistent microphone priorities with draggable online and offline devices.
