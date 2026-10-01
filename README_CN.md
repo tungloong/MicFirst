@@ -5,6 +5,10 @@
 </p>
 
 <p align="center">
+  <a href="https://apps.apple.com/us/app/micfirst/id6814898645?mt=12"><img src="https://tools.applemarketingtools.com/api/badges/download-on-the-mac-app-store/black/zh-cn" height="48" alt="从 Mac App Store 下载"></a>
+</p>
+
+<p align="center">
   <a href="https://github.com/tungloong/MicFirst/actions/workflows/build.yml"><img src="https://github.com/tungloong/MicFirst/actions/workflows/build.yml/badge.svg" alt="Build status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/tungloong/MicFirst" alt="MIT License"></a>
 </p>
@@ -20,8 +24,13 @@ macOS 已经有一个原生风格的声音输出菜单，但没有一个同样�
 
 ## 当前状态与安装
 
-从 [MicFirst Releases](https://github.com/tungloong/MicFirst/releases/latest) 下载 MicFirst 1.0.0。
-打开 DMG，把 MicFirst 拖进“应用程序”即可。通用版本同时支持 Apple 芯片和 Intel，已用 Developer ID 签名并通过 Apple 公证。
+MicFirst 1.0.0 有两种安装方式：
+
+- **Mac App Store**：从 [App Store 页面](https://apps.apple.com/us/app/micfirst/id6814898645?mt=12) 安装。
+- **直接下载**：从 [MicFirst Releases](https://github.com/tungloong/MicFirst/releases/latest) 下载 DMG，打开后把 MicFirst 拖进“应用程序”。
+  通用版本同时支持 Apple 芯片和 Intel，已用 Developer ID 签名并通过 Apple 公证。直接下载版不会自动更新，新版本请留意 Releases。
+
+两个版本是同一个 app，Bundle ID 和设置都相同，只需安装其中一个。
 
 源码使用 MIT License 发布，也可以按本页说明从源码构建运行。
 AudioInputLocker 的现有下载属于它自己的产品。
@@ -142,7 +151,7 @@ MicFirst 使用 SwiftUI、AppKit 和 Core Audio 构建。
 - app 是菜单栏工具，并通过 `LSUIElement` 隐藏 Dock 图标。
 - Core Audio 用于设备枚举、默认输入切换、输入音量读写和设备变化监听。
 - 设备排序、已记住的设备信息和自动模式开关保存在本地 `UserDefaults`。
-- 已加入 App Sandbox entitlements，用于 Mac App Store 验证。
+- Mac App Store 版和直接下载版都启用了 App Sandbox。
 - HUD 使用无边框 `NSWindow`，位于普通弹出菜单之上，不获取 key/main 焦点。macOS 26+ 使用无 tint 的 clear 玻璃，底下叠加 0.80 不透明度的 Popover 材质以改善可读性。
 - app 不使用私有 API。
 
@@ -175,8 +184,6 @@ app 不录音，因此正常情况下不需要请求麦克风录制权限。
 
 ## Roadmap
 
-- 提供 signed 和 notarized 的直接下载版本。
-- 验证 App Sandbox 下的 Mac App Store 分发可行性。
 - 在 preview 脚本之外继续补齐发布打包和上传自动化。
 
 2026 年 9 月 7 日决定：短期不探索多麦混音与融合。详见[产品决策](docs/product-decisions.md)。

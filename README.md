@@ -5,6 +5,10 @@
 </p>
 
 <p align="center">
+  <a href="https://apps.apple.com/us/app/micfirst/id6814898645?mt=12"><img src="https://tools.applemarketingtools.com/api/badges/download-on-the-mac-app-store/black/en-us" height="48" alt="Download on the Mac App Store"></a>
+</p>
+
+<p align="center">
   <a href="https://github.com/tungloong/MicFirst/actions/workflows/build.yml"><img src="https://github.com/tungloong/MicFirst/actions/workflows/build.yml/badge.svg" alt="Build status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/tungloong/MicFirst" alt="MIT License"></a>
 </p>
@@ -26,9 +30,16 @@ uses the first available device and restores it after external route changes.
 
 ## Status and Installation
 
-Download MicFirst 1.0.0 from [MicFirst Releases](https://github.com/tungloong/MicFirst/releases/latest).
-Open the DMG and drag MicFirst to Applications. The universal build (Apple
-silicon and Intel) is signed with Developer ID and notarized by Apple.
+MicFirst 1.0.0 is available in two ways:
+
+- **Mac App Store**: install from the [App Store page](https://apps.apple.com/us/app/micfirst/id6814898645?mt=12).
+- **Direct download**: get the DMG from [MicFirst Releases](https://github.com/tungloong/MicFirst/releases/latest),
+  open it, and drag MicFirst to Applications. The universal build (Apple silicon
+  and Intel) is signed with Developer ID and notarized by Apple. It does not
+  update itself; check Releases for new versions.
+
+Both builds are the same app with the same bundle ID and settings, so install
+only one of them.
 
 The source is available under the MIT License; you can also build and run it
 using the instructions in this README.
@@ -171,7 +182,7 @@ MicFirst is built with SwiftUI, AppKit, and Core Audio.
 - Core Audio is used for device enumeration, default input switching, input
   volume reads and writes, and device-change monitoring.
 - The priority order, remembered device metadata, and automatic-mode switch are stored locally in `UserDefaults`.
-- App Sandbox entitlements are included for Mac App Store validation.
+- App Sandbox is enabled in both the Mac App Store and direct-download builds.
 - The HUD uses a borderless `NSWindow` above ordinary pop-up menus and refuses
   key/main focus. On macOS 26+, untinted clear glass sits over Popover material
   at 0.80 opacity for readability.
@@ -212,8 +223,6 @@ More notes are in `docs/troubleshooting.md`.
 
 ## Roadmap
 
-- Ship a signed and notarized direct-download build.
-- Validate App Sandbox behavior for Mac App Store distribution.
 - Add release packaging and upload automation beyond the preview script.
 
 As of September 7, 2026, multi-microphone mixing and fusion are outside the

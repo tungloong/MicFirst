@@ -5,7 +5,8 @@ its release history remains in [its repository](https://github.com/tungloong/Aud
 
 ## 1.0.0 - 2026-10-01
 
-- First public release: universal Developer ID signed and notarized DMG and ZIP.
+- First public release: universal Developer ID signed and notarized DMG and ZIP,
+  and the [Mac App Store](https://apps.apple.com/us/app/micfirst/id6814898645?mt=12) version.
 
 - Established MicFirst as an independent product and source repository.
 - Added persistent microphone priorities with draggable online and offline devices.
