@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://apps.apple.com/us/app/micfirst/id6814898645?mt=12"><img src="https://tools.applemarketingtools.com/api/badges/download-on-the-mac-app-store/black/zh-cn" height="48" alt="从 Mac App Store 下载"></a>
+  <a href="https://apps.apple.com/cn/app/micfirst/id6814898645?mt=12"><img src="docs/assets/mac-app-store-badge-zh-cn.svg" height="48" alt="从 Mac App Store 下载"></a>
 </p>
 
 <p align="center">
@@ -42,7 +42,7 @@ macOS 已经有一个原生风格的声音输出菜单，但没有一个同样�
 
 MicFirst 1.0.0 有两种安装方式：
 
-- **Mac App Store**：从 [App Store 页面](https://apps.apple.com/us/app/micfirst/id6814898645?mt=12) 安装。
+- **Mac App Store**：从 [App Store 页面](https://apps.apple.com/cn/app/micfirst/id6814898645?mt=12) 安装。
 - **直接下载**：从 [MicFirst Releases](https://github.com/tungloong/MicFirst/releases/latest) 下载 DMG，打开后把 MicFirst 拖进“应用程序”。
   通用版本同时支持 Apple 芯片和 Intel，已用 Developer ID 签名并通过 Apple 公证。直接下载版不会自动更新，新版本请留意 Releases。
 

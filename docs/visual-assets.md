@@ -62,3 +62,9 @@ swift scripts/export-app-icon.swift
 ## README Screenshots
 
 `docs/assets/screenshots/micfirst-{menu,settings,hud}-{en,zh}.png` 是中英文 README 和 GitHub Release 使用的现役截图。它们由 Debug 构建的 `--priority-preview --export-screenshots <目录>` 用模拟设备离屏渲染，不含真实设备名或桌面内容。同目录下的 `menu-popover.png` 与 `restore-hud.png` 是 AudioInputLocker 的历史截图，不代表 MicFirst 界面。
+
+## Mac App Store Badge
+
+`docs/assets/mac-app-store-badge-{en,zh-cn}.svg` 是 Apple 官方“Download on the Mac App Store”黑色徽章，未经修改，分别供英文和中文 README 使用。来源为 `https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-mac-app-store/black/{en-us,zh-cn}`。徽章存放在仓库内，因为 GitHub 的图片代理拉不到旧的 `tools.applemarketingtools.com` 外链。
+
+中文 README 链接到 `/cn/` 商店页面：中国大陆直连 `apps.apple.com` 时，其他地区的链接会被重定向到 `/cn` 首页。英文 README 保留 `/us/` 链接，并附一个中国大陆链接。
