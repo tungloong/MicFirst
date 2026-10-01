@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://apps.apple.com/us/app/micfirst/id6814898645?mt=12"><img src="docs/assets/mac-app-store-badge-en.svg" height="48" alt="Download on the Mac App Store"></a>
+  <a href="https://apps.apple.com/app/micfirst/id6814898645?mt=12"><img src="docs/assets/mac-app-store-badge-en.svg" height="48" alt="Download on the Mac App Store"></a>
 </p>
 
 <p align="center">
@@ -48,7 +48,7 @@ uses the first available device and restores it after external route changes.
 
 MicFirst 1.0.0 is available in two ways:
 
-- **Mac App Store**: install from the [App Store page](https://apps.apple.com/us/app/micfirst/id6814898645?mt=12)
+- **Mac App Store**: install from the [App Store page](https://apps.apple.com/app/micfirst/id6814898645?mt=12)
   (in mainland China, use the [China storefront page](https://apps.apple.com/cn/app/micfirst/id6814898645?mt=12)).
 - **Direct download**: get the DMG from [MicFirst Releases](https://github.com/tungloong/MicFirst/releases/latest),
   open it, and drag MicFirst to Applications. The universal build (Apple silicon
