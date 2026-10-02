@@ -13,6 +13,7 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
     weak var anchorProvider: HUDAnchorProviding?
 
     private var window: PreferredInputHUDWindow?
+    private var presentationCount = 0
     private var hideWorkItem: DispatchWorkItem?
     private let placement = HUDPlacement()
     private var nativeHosts: [NativeHUDHost] = []
@@ -105,6 +106,7 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
         window.appearance = nil
         self.window = window
         placedAnchorFrame = baseFrame
+        presentationCount += 1
         move(to: initialFrame, animated: false)
         window.ignoresMouseEvents = true
         window.alphaValue = 0
@@ -154,16 +156,21 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
 
         window.ignoresMouseEvents = true
 
+        let presentation = presentationCount
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.15
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
             window.animator().alphaValue = 0
-        } completionHandler: { [weak window] in
-            guard let window,
-                  window.alphaValue == 0 else {
-                return
+        } completionHandler: { [weak self, weak window] in
+            MainActor.assumeIsolated {
+                // A presentation that began during this fade keeps the window: its own
+                // fade-in starts at alpha 0, which would otherwise look like a finished hide.
+                guard let self, let window, self.presentationCount == presentation,
+                      window.alphaValue == 0 else {
+                    return
+                }
+                window.orderOut(nil)
             }
-            window.orderOut(nil)
         }
     }
 

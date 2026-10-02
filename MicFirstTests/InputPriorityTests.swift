@@ -108,6 +108,21 @@ final class InputPriorityTests: XCTestCase {
         defaults.removePersistentDomain(forName: suite)
     }
 
+    /// Short for tests, yet long enough for a simulated system to move the route inside it.
+    private let settle: TimeInterval = 0.05
+
+    /// Polls instead of sleeping a fixed time: hosted CI can delay the main queue.
+    private func eventually(_ condition: () -> Bool) async throws {
+        let deadline = ContinuousClock.now.advanced(by: .seconds(2))
+        while !condition(), ContinuousClock.now < deadline {
+            try await Task.sleep(nanoseconds: 5_000_000)
+        }
+    }
+
+    private func settled() async throws {
+        try await Task.sleep(nanoseconds: UInt64(settle * 6 * 1_000_000_000))
+    }
+
     func testFreshInstallKeepsCurrentFirstAndAppendsNewDevices() {
         let store = InputPriorityStore(defaults: defaults)
         store.observe([device(1), device(2, current: true)])
@@ -234,7 +249,7 @@ final class InputPriorityTests: XCTestCase {
         XCTAssertGreaterThan(hud.dismissals, dismissals)
     }
 
-    func testFallbackAndReconnectChooseHighestAvailable() async {
+    func testFallbackAndReconnectChooseHighestAvailable() async throws {
         let (model, audio, _) = makeModel()
         audio.available = [device(2), device(3)]
         audio.currentID = 3
@@ -243,10 +258,11 @@ final class InputPriorityTests: XCTestCase {
         XCTAssertEqual(model.priorityRows.map(\.isOnline), [false, true, true])
         audio.available = [device(1), device(2), device(3)]
         await audio.emitChange()
+        try await eventually { audio.currentID == 1 }
         XCTAssertEqual(audio.currentID, 1)
     }
 
-    func testAllOfflineKeepsModeAndRecoversWithoutDefaultRoute() async {
+    func testAllOfflineKeepsModeAndRecoversWithoutDefaultRoute() async throws {
         let (model, audio, _) = makeModel()
         audio.available = []
         audio.currentID = nil
@@ -255,7 +271,97 @@ final class InputPriorityTests: XCTestCase {
         XCTAssertEqual(model.priorityRows.count, 3)
         audio.available = [device(3)]
         await audio.emitChange()
+        try await eventually { audio.currentID == 3 }
         XCTAssertEqual(audio.currentID, 3)
+    }
+
+    func testArrivingTopDeviceThatTheSystemSelectsNeedsNoWriteOrHUD() async throws {
+        let (model, audio, hud) = makeModel()
+        audio.available = [device(2), device(3)]
+        audio.currentID = 2
+        await audio.emitChange()
+        audio.available = [device(1), device(2), device(3)]
+        await audio.emitChange()
+        audio.currentID = 1 // The system follows a moment after the device list.
+        await audio.emitChange()
+        try await settled()
+        XCTAssertTrue(audio.writes.isEmpty)
+        XCTAssertTrue(hud.shownNames.isEmpty)
+        XCTAssertTrue(model.automaticInputIsEnabled)
+    }
+
+    func testLeavingDefaultDeviceThatTheSystemReplacesNeedsNoWriteOrHUD() async throws {
+        let (model, audio, hud) = makeModel()
+        audio.available = [device(2), device(3)] // The default still names the departed device.
+        await audio.emitChange()
+        XCTAssertTrue(audio.writes.isEmpty)
+        audio.currentID = 2
+        await audio.emitChange()
+        try await settled()
+        XCTAssertTrue(audio.writes.isEmpty)
+        XCTAssertTrue(hud.shownNames.isEmpty)
+        XCTAssertTrue(model.automaticInputIsEnabled)
+    }
+
+    func testArrivingTopDeviceTheSystemIgnoresIsSelectedAfterSettling() async throws {
+        let (model, audio, hud) = makeModel()
+        audio.available = [device(2), device(3)]
+        audio.currentID = 2
+        await audio.emitChange()
+        audio.available = [device(1), device(2), device(3)]
+        await audio.emitChange()
+        XCTAssertTrue(audio.writes.isEmpty, "The system gets a moment to move the route itself")
+        try await eventually { audio.currentID == 1 }
+        XCTAssertEqual(audio.writes, [1])
+        XCTAssertEqual(hud.shownNames, ["Device 1"])
+        XCTAssertTrue(model.automaticInputIsEnabled)
+    }
+
+    func testLeavingDefaultDeviceTheSystemDoesNotReplaceFallsBackAfterSettling() async throws {
+        let (model, audio, hud) = makeModel()
+        audio.available = [device(2), device(3)]
+        await audio.emitChange()
+        XCTAssertTrue(audio.writes.isEmpty)
+        try await eventually { audio.currentID == 2 }
+        XCTAssertEqual(audio.writes, [2])
+        XCTAssertEqual(hud.shownNames, ["Device 2"])
+        XCTAssertTrue(model.automaticInputIsEnabled)
+    }
+
+    func testSystemFallbackToALowerDeviceIsOverriddenAtOnce() async {
+        let (model, audio, hud) = makeModel()
+        audio.available = [device(2), device(3)]
+        audio.currentID = 3
+        await audio.emitChange()
+        XCTAssertEqual(audio.writes, [2])
+        XCTAssertEqual(hud.shownNames, ["Device 2"])
+        XCTAssertTrue(model.automaticInputIsEnabled)
+    }
+
+    func testTakeoverByAnArrivingDeviceIsRestoredWithoutWaiting() async {
+        let (model, audio, hud) = makeModel()
+        audio.available.append(device(4, name: "AirPods", transport: kAudioDeviceTransportTypeBluetooth))
+        await audio.emitChange()
+        audio.currentID = 4
+        await audio.emitChange()
+        XCTAssertEqual(audio.writes, [1])
+        XCTAssertEqual(hud.shownNames, ["Device 1"])
+        XCTAssertTrue(model.automaticInputIsEnabled)
+    }
+
+    func testOtherEventsWhileSettlingDoNotSwitchEarly() async throws {
+        let (model, audio, hud) = makeModel()
+        audio.available = [device(2), device(3)]
+        audio.currentID = 2
+        await audio.emitChange()
+        audio.available = [device(1), device(2), device(3)]
+        await audio.emitChange()
+        await audio.emitChange() // A volume change, or a second device-list event.
+        XCTAssertTrue(audio.writes.isEmpty)
+        try await eventually { audio.currentID == 1 }
+        XCTAssertEqual(audio.writes, [1])
+        XCTAssertEqual(hud.shownNames, ["Device 1"])
+        XCTAssertTrue(model.automaticInputIsEnabled)
     }
 
     func testManualSelectionStaysOffPastOldCountdownAndKeepsOrder() async throws {
@@ -282,7 +388,7 @@ final class InputPriorityTests: XCTestCase {
         XCTAssertTrue(audio.writes.isEmpty)
     }
 
-    func testReorderingOfflineDeviceDoesNotSelectItUntilItReturns() async {
+    func testReorderingOfflineDeviceDoesNotSelectItUntilItReturns() async throws {
         let (model, audio, _) = makeModel()
         audio.available = [device(1), device(3)]
         await audio.emitChange()
@@ -291,6 +397,7 @@ final class InputPriorityTests: XCTestCase {
         XCTAssertEqual(audio.currentID, 1)
         audio.available = [device(1), device(2), device(3)]
         await audio.emitChange()
+        try await eventually { audio.currentID == 2 }
         XCTAssertEqual(audio.currentID, 2)
     }
 
@@ -318,7 +425,7 @@ final class InputPriorityTests: XCTestCase {
         XCTAssertEqual(model.priorityRows.map(\.id), ["1", "2", "3"])
     }
 
-    func testHotPlugIsNotIgnoredWhileAdjustingVolume() async {
+    func testHotPlugIsNotIgnoredWhileAdjustingVolume() async throws {
         let (model, audio, _) = makeModel()
         audio.available = [device(2), device(3)]
         audio.currentID = 2
@@ -326,6 +433,7 @@ final class InputPriorityTests: XCTestCase {
         model.setCurrentVolume(0.7)
         audio.available = [device(1), device(2), device(3)]
         await audio.emitChange()
+        try await eventually { audio.currentID == 1 }
         XCTAssertEqual(audio.currentID, 1)
     }
 
@@ -532,7 +640,8 @@ final class InputPriorityTests: XCTestCase {
     func testMenuExpiryRefreshesWithoutAnotherAudioEvent() async throws {
         let audio = FakeAudioManager()
         let store = InputPriorityStore(defaults: defaults, offlineMenuGracePeriod: 0.06)
-        let model = AudioInputViewModel(audioManager: audio, preferences: store, hud: FakeHUD())
+        let model = AudioInputViewModel(
+            audioManager: audio, preferences: store, hud: FakeHUD(), hotPlugSettleDelay: settle)
         audio.available = [device(2), device(3)]
         await audio.emitChange()
         XCTAssertEqual(model.menuRows.map(\.id), ["1", "2", "3"])
@@ -546,6 +655,7 @@ final class InputPriorityTests: XCTestCase {
         audio.available = [device(1), device(2), device(3)]
         await audio.emitChange()
         XCTAssertEqual(model.menuRows.map(\.id), ["1", "2", "3"])
+        try await eventually { audio.currentID == 1 }
         XCTAssertEqual(audio.currentID, 1)
     }
 
@@ -553,7 +663,8 @@ final class InputPriorityTests: XCTestCase {
         let audio = FakeAudioManager()
         let hud = FakeHUD()
         let model = AudioInputViewModel(
-            audioManager: audio, preferences: InputPriorityStore(defaults: defaults), hud: hud)
+            audioManager: audio, preferences: InputPriorityStore(defaults: defaults), hud: hud,
+            hotPlugSettleDelay: settle)
         return (model, audio, hud)
     }
 }

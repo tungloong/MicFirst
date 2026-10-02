@@ -16,6 +16,13 @@ its release history remains in [its repository](https://github.com/tungloong/Aud
   drives placement. It remains as diagnostic evidence.
 - Added `scripts/diagnostics/watch-system-banner-hosts.swift` to re-check the
   banner host on another macOS version.
+- The HUD now appears only when MicFirst itself changes the input. When a device
+  arrives or leaves, MicFirst waits 0.3 seconds for the system's own route change.
+  If macOS lands on the priority device, MicFirst writes nothing and stays silent,
+  so connecting or putting away top-priority AirPods no longer shows the HUD.
+  An external takeover is still restored immediately.
+- Fixed a HUD that could vanish right after appearing when it was dismissed and
+  presented again in quick succession, as when the system repeats a route change.
 
 ## 1.0.0 - 2026-10-01
 

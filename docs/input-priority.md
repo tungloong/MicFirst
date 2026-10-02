@@ -20,6 +20,21 @@ Initial approved design: [AudioInputLocker — Input Priority](https://www.figma
 | Delete an offline device in Settings | Forget its entry; a future reconnect appends it at the bottom. |
 | No eligible devices available | Keep the switch on, leave the current system route alone, and wait. |
 
+**MicFirst changes the route only when the system does not.** A device arriving
+or leaving is usually followed, within milliseconds, by the system moving the
+default input itself: to AirPods that just connected, or back to the built-in
+microphone when they leave. When the device list changes and the default input
+has not moved yet, MicFirst waits 0.3 seconds instead of switching first.
+
+- The system lands on the priority target: MicFirst writes nothing and shows no HUD.
+- The system chooses another online device: MicFirst restores the target at
+  once, as for any external takeover, and shows the HUD.
+- The system does not move the route within the wait: MicFirst selects the
+  target when the wait ends and shows the HUD.
+
+A change of the default input while the same devices stay online is never
+delayed. Menu and Settings actions also act at once and stay silent.
+
 Manual hiding persists across disconnects and relaunches. Automatic offline collapse
 does not change that preference. The Settings visibility checkbox reflects the
 current menu state and is read-only while offline. All devices can still be sorted
@@ -165,9 +180,10 @@ names receive a USB/Bluetooth suffix in the menu; original device names are reta
 - `InputPriorityPreview.swift`: Debug-only simulated UI; no system audio writes.
 
 Volume echo suppression only affects the slider; it never discards route or
-hot-plug events. A restoration HUD appears only after the actual default input
-matches the selected priority target. A transient route failure receives three
-short retries; disabling automatic mode cancels pending work.
+hot-plug events. The HUD appears only after MicFirst itself changed the default
+input and the route matches the selected priority target; a route the system
+reaches on its own shows none. A transient route failure receives three short
+retries; disabling automatic mode cancels pending work.
 
 ## Validation
 
@@ -200,6 +216,32 @@ swift -e 'import Foundation; DistributedNotificationCenter.default().postNotific
 This Debug-only trigger uses the preview's simulated current device. The HUD
 keeps its normal lifetime and hover behavior; its priority button operates on
 the isolated preview model.
+
+Validated on 2026-10-03 for route changes and HUD triggers (macOS 27.0, build
+26A428, real devices, sandboxed Debug app):
+
+- Before the change, the unified log of a real-device run recorded six writes of
+  the default input by MicFirst while AirPods connected and left. Five of them
+  set the device the system itself set 3–42 ms earlier or later, and each one
+  showed the HUD.
+- After the change, with AirPods first in the list: two connections and two
+  departures (one into the case, one taken over by an iPhone) produced no write
+  by MicFirst and no HUD window.
+- With the built-in microphone first: each time the system moved the input to
+  the connecting AirPods, MicFirst restored the built-in microphone 5–41 ms later
+  and showed the HUD. The system repeated its change up to three times within
+  110 ms; MicFirst restored it every time.
+- A HUD dismissed and presented again in one main-thread turn used to be ordered
+  out about 30 ms later by the earlier dismissal's fade completion, so one of
+  those restorations showed no HUD. A temporary Debug trigger reproduced it; with
+  the presentation counter the HUD stayed visible through three such repeats.
+- All 80 hostless tests and Debug / universal Release (arm64 + x86_64) builds
+  passed without warnings.
+
+The 0.3-second wait ending in a write by MicFirst, for a device the system does
+not select itself, was exercised only in hostless tests. The system releasing
+AirPods as input while they stay connected did not occur in this run; it counts
+as an external takeover, so MicFirst restores AirPods when they are first.
 
 Validated on 2026-10-02 for live banner avoidance (macOS 27.0, build 26A428,
 sandboxed Debug app launched through LaunchServices; simulated devices unless

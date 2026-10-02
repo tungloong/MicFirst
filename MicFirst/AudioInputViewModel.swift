@@ -28,10 +28,13 @@ final class AudioInputViewModel: ObservableObject {
     private let audioManager: InputAudioManaging
     private let preferences: InputPriorityStore
     private let hud: InputPriorityHUDPresenting
+    private let hotPlugSettleDelay: TimeInterval
     private let volumeWriteQueue = DispatchQueue(label: "MicFirst.VolumeWrite", qos: .userInitiated)
     private var volumeWriteWorkItem: DispatchWorkItem?
     private var restorationWorkItem: DispatchWorkItem?
     private var menuRefreshWorkItem: DispatchWorkItem?
+    private var settleWorkItem: DispatchWorkItem?
+    private var settleToken: UUID?
     private var restoration: Restoration?
     private var monitoredDeviceID: AudioDeviceID?
     private var suppressVolumeEchoUntil = Date.distantPast
@@ -42,11 +45,13 @@ final class AudioInputViewModel: ObservableObject {
     init(
         audioManager: InputAudioManaging = CoreAudioInputManager(),
         preferences: InputPriorityStore = InputPriorityStore(),
-        hud: InputPriorityHUDPresenting? = nil
+        hud: InputPriorityHUDPresenting? = nil,
+        hotPlugSettleDelay: TimeInterval = 0.3
     ) {
         self.audioManager = audioManager
         self.preferences = preferences
         self.hud = hud ?? PreferredInputHUD.shared
+        self.hotPlugSettleDelay = hotPlugSettleDelay
         showsHUD = preferences.showsHUD
         automaticInputIsEnabled = preferences.isEnabled
         refresh(shouldNotify: false)
@@ -62,6 +67,7 @@ final class AudioInputViewModel: ObservableObject {
         volumeWriteWorkItem?.cancel()
         restorationWorkItem?.cancel()
         menuRefreshWorkItem?.cancel()
+        settleWorkItem?.cancel()
         audioManager.stopMonitoring()
         if let debugHUDObserver {
             DistributedNotificationCenter.default().removeObserver(debugHUDObserver)
@@ -183,13 +189,50 @@ final class AudioInputViewModel: ObservableObject {
 
     private func refresh(shouldNotify: Bool = true) {
         do {
+            let onlineBefore = Set(devices.map(\.uid))
+            let currentBefore = currentDevice?.uid
             applyLoadedDevices(try audioManager.loadInputDevices())
             errorMessage = nil
-            enforcePriority(shouldNotify: shouldNotify)
+            guard shouldNotify else {
+                enforcePriority(shouldNotify: false)
+                return
+            }
+            if let current = currentDevice?.uid, current != currentBefore {
+                // The route moved to a live device: the system, or another app, has chosen.
+                cancelSettle()
+                enforcePriority(shouldNotify: true)
+            } else if Set(devices.map(\.uid)) != onlineBefore {
+                // A device arrived or left and the route has not moved yet. The system usually
+                // follows within milliseconds; switching first would announce its own change.
+                awaitSystemRoute()
+            } else if settleToken == nil {
+                enforcePriority(shouldNotify: true)
+            }
         } catch {
             // A failed enumeration is not evidence that remembered devices went offline.
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func awaitSystemRoute() {
+        settleWorkItem?.cancel()
+        let token = UUID()
+        settleToken = token
+        let workItem = DispatchWorkItem { [weak self] in
+            Task { @MainActor [weak self] in
+                guard let self, self.settleToken == token else { return }
+                self.cancelSettle()
+                self.refresh()
+            }
+        }
+        settleWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + hotPlugSettleDelay, execute: workItem)
+    }
+
+    private func cancelSettle() {
+        settleWorkItem?.cancel()
+        settleWorkItem = nil
+        settleToken = nil
     }
 
     private func applyLoadedDevices(_ loadedDevices: [InputDevice]) {
