@@ -75,10 +75,11 @@ if [[ -z "$APP_PID" ]]; then
   exit 1
 fi
 if [[ "$CONFIGURATION" == "Debug" ]]; then
-  # The HUD anchors to MicFirst's own menu icon without this helper. The helper
-  # only supplies Sound and Control Center positions for collision avoidance.
+  # The HUD anchors to MicFirst's own menu icon and avoids live system banners
+  # without this helper. The helper supplies an own-button fallback and
+  # Sound/Control Center positions for diagnostics.
   if ! "$HELPER_PATH" --deliver "$APP_PID"; then
-    echo "Sound and Control Center positions were not delivered. The HUD still anchors to MicFirst's own menu icon." >&2
+    echo "The startup menu-button snapshot was not delivered. The HUD still anchors to MicFirst's own menu icon and avoids live system banners." >&2
   fi
 fi
 printf '%s\n' "$APP_PID"

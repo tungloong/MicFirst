@@ -1,82 +1,68 @@
-import CoreGraphics
-import Foundation
+import AppKit
 
-enum NativeHUDPresence: String, Codable {
-    case visible, absent, unknown
-}
+/// One of Apple's menu-bar banner hosts, read from public window metadata.
+struct NativeHUDHost: Codable, Equatable {
+    /// Volume, display brightness and keyboard brightness measured 290 pt wide on
+    /// macOS 27.0; AirPods routing measured 235 pt. Metadata does not say which one
+    /// is showing, so the widest stays clear.
+    static let widestCapsuleWidth: CGFloat = 290
 
-struct NativeHUDWindowSample: Codable, Equatable {
     let id: CGWindowID
-    let ownerPID: pid_t
-    let owner: String
-    let ownerBundleID: String?
-    let rawCGFrame: CGRect
-    let appKitFrame: CGRect
+    let ownerBundleID: String
     let level: Int
-    let alpha: Double
-    let isOnScreen: Bool
-    let isOnTargetScreen: Bool?
-    let titleAvailability: String
-    let matchesLegacyFilter: Bool
-    let legacyAssumedCapsuleFrame: CGRect?
+    /// AppKit screen points. The transparent host may extend past the screen edge.
+    let frame: CGRect
+
+    /// The capsule is centered in its host and narrower than it.
+    var occupiedFrame: CGRect {
+        frame.insetBy(dx: max(0, (frame.width - Self.widestCapsuleWidth) / 2), dy: 0)
+    }
 }
 
-struct NativeHUDProbeResult: Codable, Equatable {
-    let presence: NativeHUDPresence
-    let reason: String
-    let windows: [NativeHUDWindowSample]
-}
-
-/// Reconstruct the May 20 query as diagnostic evidence, not a placement policy.
-/// Neither a legacy match nor an empty query proves the native HUD's visibility.
+/// Apple draws its AirPods routing, volume and brightness banners inside a transparent
+/// host window. Public window metadata lists that host without any permission, also
+/// inside App Sandbox. No title, image or content is read.
+///
+/// macOS 27.0: MenuBarAgent, level 101, 352×157, top edge on the menu bar's bottom,
+/// centered under the menu button that owns the banner. The Control Center signature
+/// is the macOS 26 query from May 2026 and has not been re-verified.
 enum NativeHUDProbe {
-    static let ownerBundles = [
-        "com.apple.controlcenter", "com.apple.MenuBarAgent", "com.apple.OSDUIHelper", "com.apple.systemuiserver"
-    ]
-
-    static func inspect(
-        windowInfos: [[String: Any]]?, ownerBundlesByPID: [pid_t: String], primaryScreenMaxY: CGFloat,
-        targetScreen: CGRect?
-    ) -> NativeHUDProbeResult {
-        guard let windowInfos else {
-            return NativeHUDProbeResult(presence: .unknown, reason: "window-enumeration-unavailable", windows: [])
-        }
-        let samples: [NativeHUDWindowSample] = windowInfos.compactMap { info in
-            guard let pid = (info[kCGWindowOwnerPID as String] as? NSNumber)?.int32Value,
-                  let owner = info[kCGWindowOwnerName as String] as? String,
-                  ownerBundlesByPID[pid] != nil || owner == "Window Server",
-                  let id = (info[kCGWindowNumber as String] as? NSNumber)?.uint32Value,
+    static func hosts(
+        in windowInfos: [[String: Any]],
+        primaryScreenMaxY: CGFloat,
+        bundleIdentifier: (pid_t) -> String?
+    ) -> [NativeHUDHost] {
+        let menuBarLevel = Int(CGWindowLevelForKey(.mainMenuWindow))
+        return windowInfos.compactMap { info in
+            guard (info[kCGWindowIsOnscreen as String] as? NSNumber)?.boolValue == true,
+                  let alpha = (info[kCGWindowAlpha as String] as? NSNumber)?.doubleValue, alpha > 0.02,
+                  let level = (info[kCGWindowLayer as String] as? NSNumber)?.intValue, level > menuBarLevel,
                   let bounds = info[kCGWindowBounds as String] as? [String: Any],
                   let raw = CGRect(dictionaryRepresentation: bounds as CFDictionary),
-                  [raw.minX, raw.minY, raw.width, raw.height].allSatisfy(\.isFinite),
-                  let level = (info[kCGWindowLayer as String] as? NSNumber)?.intValue,
-                  let alpha = (info[kCGWindowAlpha as String] as? NSNumber)?.doubleValue,
-                  alpha.isFinite else { return nil }
-            let onScreen = (info[kCGWindowIsOnscreen as String] as? NSNumber)?.boolValue ?? false
-            let title = info[kCGWindowName as String] as? String
-            let frame = CGRect(x: raw.minX, y: primaryScreenMaxY - raw.maxY, width: raw.width, height: raw.height)
-            let onTargetScreen = targetScreen.map { $0.contains(CGPoint(x: frame.midX, y: frame.midY)) }
-            let legacyMatch = onScreen && owner == "Control Center" && (title ?? "").isEmpty
-                && level >= 2000 && alpha > 0.02
-                && (260...560).contains(frame.width) && (70...190).contains(frame.height)
-                && onTargetScreen == true
-            let assumedCapsule: CGRect? = legacyMatch ? CGRect(
-                x: frame.midX - 235 / 2, y: frame.midY - 52 / 2, width: 235, height: 52
-            ) : nil
-            return NativeHUDWindowSample(
-                id: id, ownerPID: pid, owner: owner, ownerBundleID: ownerBundlesByPID[pid],
-                rawCGFrame: raw, appKitFrame: frame, level: level, alpha: alpha, isOnScreen: onScreen,
-                isOnTargetScreen: onTargetScreen,
-                titleAvailability: title == nil ? "missing" : (title!.isEmpty ? "empty" : "nonempty"),
-                matchesLegacyFilter: legacyMatch, legacyAssumedCapsuleFrame: assumedCapsule
+                  [raw.minX, raw.minY].allSatisfy(\.isFinite),
+                  (260...560).contains(raw.width), (70...190).contains(raw.height),
+                  let id = (info[kCGWindowNumber as String] as? NSNumber)?.uint32Value,
+                  let pid = (info[kCGWindowOwnerPID as String] as? NSNumber)?.int32Value,
+                  // Resolve the owner last: only windows shaped like a banner host reach it.
+                  let owner = bundleIdentifier(pid),
+                  owner == "com.apple.MenuBarAgent" || (owner == "com.apple.controlcenter" && level >= 2000)
+            else { return nil }
+            return NativeHUDHost(
+                id: id, ownerBundleID: owner, level: level,
+                frame: CGRect(x: raw.minX, y: primaryScreenMaxY - raw.maxY, width: raw.width, height: raw.height)
             )
         }.sorted { $0.id < $1.id }
-        return NativeHUDProbeResult(
-            presence: .unknown,
-            reason: samples.contains(where: \.matchesLegacyFilter)
-                ? "legacy-candidate-needs-visual-verification" : "no-legacy-match-not-proof-of-absence",
-            windows: samples
-        )
+    }
+
+    @MainActor
+    static func visibleHosts() -> [NativeHUDHost] {
+        guard let infos = CGWindowListCopyWindowInfo(
+            [.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID
+        ) as? [[String: Any]] else { return [] }
+        let primaryMaxY = NSScreen.screens.first(where: { $0.frame.origin == .zero })?.frame.maxY ?? 0
+        return hosts(in: infos, primaryScreenMaxY: primaryMaxY) {
+            NSRunningApplication(processIdentifier: $0)?.bundleIdentifier
+        }
     }
 }
 

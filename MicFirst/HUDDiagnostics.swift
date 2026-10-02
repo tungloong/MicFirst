@@ -4,22 +4,25 @@ import Foundation
 import OSLog
 
 /// Opt-in, time-bounded, read-only sampling. No private service request, screenshot,
-/// window title, device UID, or guessed native visibility is recorded.
+/// window title, or device UID is recorded.
 @MainActor
 final class HUDDiagnostics {
     static let shared = HUDDiagnostics()
     static var isEnabled: Bool { ProcessInfo.processInfo.arguments.contains("--hud-diagnostics") }
 
+    /// Startup menu-button snapshot. Evidence only: placement follows live banner hosts.
+    var systemMenuAnchors: [HUDSystemMenuAnchor] = []
+
     private struct Snapshot: Codable {
         let anchor: HUDAnchor?
         let systemMenuAnchors: [HUDSystemMenuAnchor]
         let hud: HUDDiagnosticPresentation
-        let native: NativeHUDProbeResult
+        let nativeHosts: [NativeHUDHost]
         let capsuleCenterDeltaFromButton: CGFloat?
     }
 
     private struct Record: Encodable {
-        let schemaVersion = 1
+        let schemaVersion = 2
         let systemVersion: String
         let deviceSource: String
         let timestamp: Date
@@ -83,16 +86,9 @@ final class HUDDiagnostics {
         let now = ProcessInfo.processInfo.systemUptime
         let anchor = anchor?()
         let hud = presentation()
-        let owners = Dictionary(uniqueKeysWithValues: NativeHUDProbe.ownerBundles.flatMap { bundle in
-            NSRunningApplication.runningApplications(withBundleIdentifier: bundle).map { ($0.processIdentifier, bundle) }
-        })
-        let primaryMaxY = NSScreen.screens.first(where: { $0.frame.origin == .zero })?.frame.maxY ?? 0
-        let native = NativeHUDProbe.inspect(
-            windowInfos: CGWindowListCopyWindowInfo(.optionAll, kCGNullWindowID) as? [[String: Any]],
-            ownerBundlesByPID: owners, primaryScreenMaxY: primaryMaxY, targetScreen: anchor?.screenFrame
-        )
         let snapshot = Snapshot(
-            anchor: anchor, systemMenuAnchors: PreferredInputHUD.shared.systemMenuAnchors, hud: hud, native: native,
+            anchor: anchor, systemMenuAnchors: systemMenuAnchors, hud: hud,
+            nativeHosts: NativeHUDProbe.visibleHosts(),
             capsuleCenterDeltaFromButton: hud.capsuleFrame.flatMap { frame in anchor.map { frame.midX - $0.buttonFrame.midX } }
         )
         guard let signature = try? encoder.encode(snapshot) else { return }
@@ -103,7 +99,7 @@ final class HUDDiagnostics {
             systemVersion: ProcessInfo.processInfo.operatingSystemVersionString,
             deviceSource: ProcessInfo.processInfo.arguments.contains("--priority-preview") ? "simulated" : "real",
             timestamp: Date(), elapsed: now - started, event: event ?? "sample",
-            coordinates: "AppKit screen points (bottom-left); rawCGFrame uses top-left", snapshot: snapshot
+            coordinates: "AppKit screen points (bottom-left)", snapshot: snapshot
         )) else { return }
         data.append(0x0A)
         let recordData = data

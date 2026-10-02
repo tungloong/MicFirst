@@ -73,7 +73,8 @@ final class MicFirstAppDelegate: NSObject, NSApplicationDelegate {
         #if DEBUG
         let receiver = HUDMenuAnchorReceiver { [weak controller] anchors in
             guard let controller, controller.update(anchors) else { return false }
-            PreferredInputHUD.shared.updateSystemMenuAnchors(anchors)
+            HUDDiagnostics.shared.systemMenuAnchors = anchors.filter(\.isValid)
+            HUDDiagnostics.shared.record(event: "system-menu-anchors-updated")
             return true
         }
         menuAnchorReceiver = receiver

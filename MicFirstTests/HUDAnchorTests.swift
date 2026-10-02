@@ -68,116 +68,146 @@ final class HUDAnchorTests: XCTestCase {
 }
 
 final class NativeHUDProbeTests: XCTestCase {
-    private let screen = CGRect(x: 0, y: 0, width: 1710, height: 1112)
-    private let owners: [pid_t: String] = [42: "com.apple.controlcenter", 43: "com.apple.MenuBarAgent"]
+    private let owners: [pid_t: String] = [
+        42: "com.apple.controlcenter", 43: "com.apple.MenuBarAgent", 44: "com.example.OtherApp"
+    ]
 
-    private func window(pid: Int = 42, owner: String = "Control Center", level: Int = 2000,
-                        frame: CGRect = CGRect(x: 1000, y: 5, width: 360, height: 136), title: String? = "") -> [String: Any] {
-        var result: [String: Any] = [
-            kCGWindowNumber as String: 1, kCGWindowOwnerPID as String: pid, kCGWindowOwnerName as String: owner,
+    /// Defaults are the AirPods routing banner host measured on macOS 27.0.
+    private func window(id: Int = 1, pid: Int = 43, level: Int = 101,
+                        frame: CGRect = CGRect(x: 1305, y: 38, width: 352, height: 157),
+                        alpha: Double = 1, onScreen: Bool = true) -> [String: Any] {
+        [
+            kCGWindowNumber as String: id, kCGWindowOwnerPID as String: pid, kCGWindowName as String: "",
             kCGWindowBounds as String: ["X": frame.minX, "Y": frame.minY, "Width": frame.width, "Height": frame.height],
-            kCGWindowLayer as String: level, kCGWindowAlpha as String: 1, kCGWindowIsOnscreen as String: true
+            kCGWindowLayer as String: level, kCGWindowAlpha as String: alpha, kCGWindowIsOnscreen as String: onScreen
         ]
-        if let title { result[kCGWindowName as String] = title }
-        return result
     }
 
-    private func inspect(_ windows: [[String: Any]]?) -> NativeHUDProbeResult {
-        NativeHUDProbe.inspect(windowInfos: windows, ownerBundlesByPID: owners, primaryScreenMaxY: 1112, targetScreen: screen)
+    private func hosts(_ windows: [[String: Any]]) -> [NativeHUDHost] {
+        NativeHUDProbe.hosts(in: windows, primaryScreenMaxY: 1112) { owners[$0] }
     }
 
-    func testUnavailableEnumerationIsUnknown() {
-        XCTAssertEqual(inspect(nil).presence, .unknown)
-        XCTAssertEqual(inspect(nil).reason, "window-enumeration-unavailable")
+    func testMenuBarAgentBannerHostIsReportedInAppKitCoordinates() {
+        XCTAssertEqual(hosts([window()]), [NativeHUDHost(
+            id: 1, ownerBundleID: "com.apple.MenuBarAgent", level: 101,
+            frame: CGRect(x: 1305, y: 917, width: 352, height: 157)
+        )])
     }
 
-    func testNoCandidateIsNotReportedAsAbsence() {
-        XCTAssertEqual(inspect([]).presence, .unknown)
-        XCTAssertEqual(inspect([]).reason, "no-legacy-match-not-proof-of-absence")
+    func testOccupiedFrameIsTheWidestCapsuleCenteredInTheHost() throws {
+        let host = try XCTUnwrap(hosts([window()]).first)
+        XCTAssertEqual(host.occupiedFrame, CGRect(x: 1336, y: 917, width: 290, height: 157))
+        let narrow = NativeHUDHost(id: 2, ownerBundleID: "com.apple.MenuBarAgent", level: 101,
+                                   frame: CGRect(x: 100, y: 900, width: 270, height: 100))
+        XCTAssertEqual(narrow.occupiedFrame, narrow.frame)
     }
 
-    func testLegacyMatchRemainsUnverifiedAndMarksCapsuleAsAssumed() throws {
-        let result = inspect([window()])
-        XCTAssertEqual(result.presence, .unknown)
-        let sample = try XCTUnwrap(result.windows.first)
-        XCTAssertTrue(sample.matchesLegacyFilter)
-        XCTAssertEqual(sample.appKitFrame, CGRect(x: 1000, y: 971, width: 360, height: 136))
-        XCTAssertEqual(sample.legacyAssumedCapsuleFrame, CGRect(x: 1062.5, y: 1013, width: 235, height: 52))
+    func testHostPastTheScreenEdgeKeepsItsMeasuredFrame() throws {
+        // The display-brightness banner under Control Center: the host ends 20 pt beyond a 1710-pt display.
+        let host = try XCTUnwrap(hosts([window(frame: CGRect(x: 1378, y: 38, width: 352, height: 157))]).first)
+        XCTAssertEqual(host.frame.maxX, 1730)
+        XCTAssertEqual(host.occupiedFrame.maxX, 1699)
     }
 
-    func testMenuPopoverIsNotPromotedToNativeHUD() {
-        let result = inspect([window(pid: 43, owner: "MenuBarAgent", level: 101, frame: CGRect(x: 1260, y: 38, width: 352, height: 157))])
-        XCTAssertEqual(result.presence, .unknown)
-        XCTAssertEqual(result.windows.count, 1)
-        XCTAssertFalse(result.windows[0].matchesLegacyFilter)
-        XCTAssertNil(result.windows[0].legacyAssumedCapsuleFrame)
+    func testMenuBarOtherOwnersAndLargePanelsAreIgnored() {
+        XCTAssertEqual(hosts([
+            window(level: 24, frame: CGRect(x: 0, y: 0, width: 1710, height: 38)),
+            window(pid: 44),
+            window(pid: 99),
+            window(frame: CGRect(x: 1188, y: 38, width: 522, height: 1045))
+        ]), [])
     }
 
-    func testWindowTitlesAreNotStoredInDiagnosticOutput() throws {
-        let result = inspect([window(title: "Private device or window title")])
-        let data = try JSONEncoder().encode(result)
+    func testHiddenOrTransparentHostsAreIgnored() {
+        XCTAssertEqual(hosts([window(onScreen: false), window(alpha: 0)]), [])
+    }
+
+    func testControlCenterNeedsItsMacOS26BannerLevel() {
+        XCTAssertEqual(hosts([window(pid: 42, level: 101)]), [])
+        XCTAssertEqual(hosts([window(pid: 42, level: 2005)]).first?.ownerBundleID, "com.apple.controlcenter")
+    }
+
+    func testOwnerIsResolvedOnlyForBannerShapedWindows() {
+        var lookups = 0
+        let found = NativeHUDProbe.hosts(in: [
+            window(id: 1, level: 0),
+            window(id: 2, frame: CGRect(x: 0, y: 0, width: 1710, height: 1112)),
+            window(id: 3)
+        ], primaryScreenMaxY: 1112) { lookups += 1; return owners[$0] }
+        XCTAssertEqual(found.map(\.id), [3])
+        XCTAssertEqual(lookups, 1)
+    }
+
+    func testHostsAreNotEncodedWithWindowTitles() throws {
+        var titled = window()
+        titled[kCGWindowName as String] = "Private device or window title"
+        let data = try JSONEncoder().encode(hosts([titled]))
         XCTAssertFalse(String(decoding: data, as: UTF8.self).contains("Private device or window title"))
-        XCTAssertEqual(result.windows.first?.titleAvailability, "nonempty")
-    }
-
-    func testCandidateOnAnotherDisplayDoesNotMatchCurrentHUDScreen() {
-        let result = inspect([window(frame: CGRect(x: -1000, y: 5, width: 360, height: 136))])
-        XCTAssertEqual(result.presence, .unknown)
-        XCTAssertEqual(result.windows.first?.isOnTargetScreen, false)
-        XCTAssertEqual(result.windows.first?.matchesLegacyFilter, false)
     }
 }
 
 final class HUDHorizontalPlacementTests: XCTestCase {
     private let screen = CGRect(x: 0, y: 0, width: 1710, height: 1112)
     private let size = CGSize(width: 235, height: 52)
-    private func system(_ center: CGFloat, id: String = "com.apple.menuextra.sound", screen: CGRect? = nil) -> HUDSystemMenuAnchor {
-        let display = screen ?? self.screen
-        return HUDSystemMenuAnchor(identifier: id,
-            buttonFrame: CGRect(x: center - 11, y: display.maxY - 30, width: 22, height: 22), screenFrame: display)
-    }
+    /// The 290-pt strip a banner host keeps clear, centered under a menu button.
+    private func banner(_ center: CGFloat) -> CGRect { CGRect(x: center - 145, y: 917, width: 290, height: 157) }
     private func own(_ center: CGFloat) -> CGRect { CGRect(x: center - 180, y: 971, width: 360, height: 136) }
-    private func place(_ center: CGFloat, _ native: HUDSystemMenuAnchor?) -> CGRect? {
-        HUDPlacement().frame(anchoredAt: own(center), capsuleSize: size, on: screen, nativeAnchor: native)
+    private func place(_ center: CGFloat, _ banners: [CGRect], keeping current: CGRect? = nil) -> CGRect? {
+        HUDPlacement().frame(anchoredAt: own(center), capsuleSize: size, on: screen, avoiding: banners, keeping: current)
     }
-    func testDistantIconsKeepOwnPosition() {
-        XCTAssertEqual(place(400, system(1436)), own(400))
+
+    func testNoBannerOrADistantBannerKeepsOwnPosition() {
+        XCTAssertEqual(place(1343, []), own(1343))
+        XCTAssertEqual(place(400, [banner(1481)]), own(400))
     }
-    func testOverlapNearRightEdgeMovesLeftWithSameY() throws {
-        let frame = try XCTUnwrap(place(1400, system(1562)))
-        XCTAssertEqual(frame.minX + 62.5 + 235, 1562 - 117.5 - 12)
-        XCTAssertEqual(frame.minY, own(1400).minY)
+
+    func testBannerUnderSoundMovesHUDLeftInTheSameRow() throws {
+        // MicFirst's icon at 1343 and Sound at 1481, as measured. The right side is past the display.
+        let frame = try XCTUnwrap(place(1343, [banner(1481)]))
+        XCTAssertEqual(frame.minX + 62.5 + 235, 1336 - 12)
+        XCTAssertEqual(frame.minY, own(1343).minY)
     }
-    func testOverlapUsesRightWhenWholeCapsuleFits() throws {
-        let frame = try XCTUnwrap(place(950, system(1000)))
-        XCTAssertEqual(frame.minX + 62.5, 1000 + 117.5 + 12)
-        XCTAssertEqual(frame.minY, own(950).minY)
+
+    func testNearestFreeSideWins() throws {
+        let right = try XCTUnwrap(place(900, [banner(800)]))
+        XCTAssertEqual(right.minX + 62.5, 945 + 12)
+        let left = try XCTUnwrap(place(700, [banner(800)]))
+        XCTAssertEqual(left.minX + 62.5 + 235, 655 - 12)
     }
-    func testSoundPreferredAndControlCenterFallback() {
-        let cc = system(1562, id: "com.apple.menuextra.controlcenter")
-        let sound = system(1436)
-        XCTAssertEqual(HUDSystemMenuAnchor.preferred(in: [cc, sound], on: screen), sound)
-        XCTAssertEqual(HUDSystemMenuAnchor.preferred(in: [cc], on: screen), cc)
+
+    func testExactGapDoesNotMoveHUD() {
+        let center: CGFloat = 1336 - 12 - 117.5
+        XCTAssertEqual(place(center, [banner(1481)]), own(center))
     }
-    func testOtherDisplayAndInvalidGeometryIgnored() {
-        let other = system(-400, screen: screen.offsetBy(dx: -1710, dy: 0))
-        XCTAssertNil(HUDSystemMenuAnchor.preferred(in: [other], on: screen))
-        let invalid = HUDSystemMenuAnchor(identifier: "com.apple.menuextra.sound", buttonFrame: .zero, screenFrame: screen)
-        XCTAssertNil(HUDSystemMenuAnchor.preferred(in: [invalid], on: screen))
-        XCTAssertEqual(place(400, nil), own(400))
+
+    func testBannerInAnotherRowIsIgnored() {
+        XCTAssertEqual(place(1343, [CGRect(x: 1336, y: 700, width: 290, height: 157)]), own(1343))
     }
-    func testNativeCapsuleClampsBeforeAvoidance() throws {
-        let frame = try XCTUnwrap(place(1600, system(1690)))
-        XCTAssertEqual(frame.minX + 62.5 + 235, 1710 - 6 - 235 - 12)
+
+    func testMovedHUDStaysAfterTheBannerLeaves() throws {
+        let moved = try XCTUnwrap(place(1343, [banner(1481)]))
+        XCTAssertEqual(place(1343, [], keeping: moved), moved)
     }
+
+    func testKeptPositionYieldsWhenItBecomesBlocked() throws {
+        let moved = try XCTUnwrap(place(1343, [banner(1481)]))
+        // Blocks the moved capsule (1089...1324) but not the own anchor (1225.5...1460.5).
+        XCTAssertEqual(place(1343, [CGRect(x: 1000, y: 917, width: 200, height: 157)], keeping: moved), own(1343))
+    }
+
+    func testKeptPositionFromAnotherRowIsDropped() {
+        XCTAssertEqual(place(1343, [], keeping: own(1100).offsetBy(dx: 0, dy: -30)), own(1343))
+    }
+
+    func testTwoBannersLeaveTheNearestFreeSide() throws {
+        // AirPods under Sound together with display brightness under Control Center.
+        let frame = try XCTUnwrap(place(1343, [banner(1481), banner(1554)]))
+        XCTAssertEqual(frame.minX + 62.5 + 235, 1336 - 12)
+    }
+
     func testNoRoomOnEitherSideSkipsWithoutLowerRow() {
         let tiny = CGRect(x: 0, y: 0, width: 450, height: 1112)
-        XCTAssertNil(HUDPlacement().frame(anchoredAt: own(225), capsuleSize: size, on: tiny,
-            nativeAnchor: system(225, screen: tiny)))
-    }
-    func testExactGapDoesNotMoveHUD() {
-        let center: CGFloat = 1000 - 235 - 12
-        XCTAssertEqual(place(center, system(1000)), own(center))
+        XCTAssertNil(HUDPlacement().frame(anchoredAt: own(225), capsuleSize: size, on: tiny, avoiding: [banner(225)]))
     }
 
     func testMeasuredStatusBarWindowKeepsTheButtonCenter() throws {

@@ -50,25 +50,40 @@ SwiftUI owns the native menu chrome and outside-click dismissal; existing menu
 controls and Settings continue using their native SwiftUI environment. Opening
 the menu dismisses the HUD via the menu content's appearance callback.
 
-In the current sandboxed development build, the startup public-AX helper also
-reads MicFirst's `micfirst-status-item` rectangle. `StatusItemController` now
-only provides this snapshot to the HUD; it creates no menu window or status item.
-All button positions refresh on launch, so rearranging MicFirst's icon also
-requires a relaunch. An unavailable own anchor suppresses HUD presentation.
-
 The HUD prefers the center of MicFirst's own menu-bar button, with its capsule
-9 pt below the menu bar. Horizontal avoidance reserves a predicted 235×52 pt
-native capsule under Sound, falling back to Control Center on the same display.
-The native region is reserved regardless of whether Apple's HUD is currently
-visible. Both capsules are clamped inside the screen before testing overlap.
+9 pt below the menu bar. `StatusItemController` only provides that anchor; it
+creates no menu window or status item. An unavailable own anchor suppresses HUD
+presentation.
 
-If the own capsule is already separated by at least 12 pt, it stays at its own
-anchor. Otherwise it moves to the native region's right if the entire capsule
-fits, or to its left if that fits. If neither side fits, skip the notification;
-never move it to a lower row. Missing/invalid system coordinates fall back to the
-own anchor without claiming collision protection. No five-second delay remains:
-confirmed restoration notifications appear immediately. Route verification and
-the normal 4.2-second visible duration/hover behavior remain unchanged.
+**System banners are avoided live.** Apple draws its AirPods routing, volume,
+display-brightness and keyboard-brightness banners inside a transparent host
+window. Public window metadata (`CGWindowListCopyWindowInfo`) lists that host
+without any permission, also inside App Sandbox, so shipped builds avoid the
+banners too. While the HUD is visible, MicFirst reads the on-screen list every
+50 ms (about 0.2 ms per read) and keeps windows that are 260–560 × 70–190 pt,
+above the menu-bar level, not transparent, and owned by MenuBarAgent (macOS 27)
+or by Control Center at level 2000+ (the macOS 26 query). It reads owner, level,
+alpha and bounds only. No title, image or content is read, nothing is stored, and
+nothing is polled while the HUD is hidden.
+
+The banner's capsule is centered in its host. Metadata does not say which banner
+is showing, so MicFirst keeps the widest measured capsule clear: the centered
+290 pt of the host (volume and brightness; AirPods routing is 235 pt).
+
+- No banner in the HUD's row: the HUD uses its own anchor.
+- A banner is already showing: the HUD appears beside it.
+- A banner appears under a visible HUD: the HUD slides aside in 0.3 seconds, or
+  jumps with Reduce Motion. A banner that moves or is replaced is followed.
+- The HUD takes the nearest free position in the same row, 12 pt from the
+  reserved region and inside the display. If neither side fits, skip the
+  notification; never move it to a lower row.
+- A HUD that moved aside stays there after the banner leaves. The next
+  presentation starts from the own anchor again.
+- A hovered HUD does not move; pointer exit re-evaluates its placement.
+
+No five-second delay remains: confirmed restoration notifications appear
+immediately. Route verification and the normal 4.2-second visible
+duration/hover behavior remain unchanged.
 
 Settings includes **Show HUD Notifications**, enabled by default for both new and
 existing installations. It persists in `inputPriorityPreferences.v1` independently
@@ -81,7 +96,7 @@ all use that frame, so the HUD no longer depends on an external helper to appear
 Moving the menu icon is picked up on the next presentation. No entitlement,
 private API, or permission prompt is used.
 
-**System-banner avoidance is a Debug snapshot.** `build-and-run.sh` still invokes
+**The Debug startup snapshot is diagnostic.** `build-and-run.sh` still invokes
 an external public-Accessibility helper once per Debug launch. Within a
 10-second deadline it reads Sound and Control Center geometry, plus MicFirst's
 own button as a fallback, and retries until the app acknowledges a usable
@@ -91,13 +106,14 @@ applying the snapshot again. The helper confirms acknowledgement and exits; the
 app removes its receiver on confirmation, with a 30-second startup cleanup
 deadline for abandoned handshakes. The helper needs an already-authorized
 Accessibility execution context. If it cannot deliver, the launch script warns
-and the HUD still anchors to MicFirst's own icon.
+and nothing about placement changes.
 
-App Sandbox cannot inspect other apps' menu buttons, so a shipped build does not
-claim separation from the system Sound banner. The Debug helper must not be
-described as production Accessibility access from the sandboxed app. See
-[native HUD investigation](native-hud-investigation.md) for the closed
-native-visibility experiments.
+The snapshot no longer drives placement. Its Sound and Control Center positions
+are recorded in opt-in diagnostics, and its own-button rectangle is a fallback
+only while the status-bar window is not available yet. A banner can anchor to
+either button and its host can extend past the display, so a button position
+does not predict the banner. Debug and shipped builds place the HUD the same way.
+See [native HUD investigation](native-hud-investigation.md) for the measurements.
 
 The HUD uses a borderless `NSWindow` at `NSWindow.Level.popUpMenu + 1`, above
 ordinary pop-up menus, and refuses actual key/main status. On macOS 26+, each
@@ -144,8 +160,8 @@ names receive a USB/Bluetooth suffix in the menu; original device names are reta
 - `PreferredInputHUD.swift`: the existing glass HUD and its presentation lifecycle.
 - `HUDPlacement.swift`: horizontal collision avoidance and visible-capsule screen clamping.
 - `StatusItemController.swift` / `HUDAnchor.swift`: own menu-button geometry and HUD placement.
-- `NativeHUDProbe.swift` / `HUDDiagnostics.swift`: read-only candidate evidence and
-  opt-in, time-bounded Debug logging; no verified native visibility channel yet.
+- `NativeHUDProbe.swift`: live system banner hosts from public window metadata.
+- `HUDDiagnostics.swift`: opt-in, time-bounded Debug logging.
 - `InputPriorityPreview.swift`: Debug-only simulated UI; no system audio writes.
 
 Volume echo suppression only affects the slider; it never discards route or
@@ -184,6 +200,39 @@ swift -e 'import Foundation; DistributedNotificationCenter.default().postNotific
 This Debug-only trigger uses the preview's simulated current device. The HUD
 keeps its normal lifetime and hover behavior; its priority button operates on
 the isolated preview model.
+
+Validated on 2026-10-02 for live banner avoidance (macOS 27.0, build 26A428,
+sandboxed Debug app launched through LaunchServices; simulated devices unless
+noted):
+
+- The running app reported no Screen Recording and no Accessibility permission,
+  and still moved its HUD for the AirPods, volume and display-brightness banners.
+- AirPods routing, volume, display-brightness and keyboard-brightness banners
+  each appeared as one MenuBarAgent window, level 101, 352×157 pt. A synchronized
+  screenshot of the AirPods banner showed its 235×52 capsule centered in the host.
+- Two user-triggered AirPods banners appeared under a visible HUD. The HUD was
+  moving within 50 ms and in place within 0.3 seconds, 39.5 pt from the AirPods
+  capsule. Those banners stayed for about 21 seconds, longer than the HUD's
+  normal 4.2 seconds.
+- A volume banner under a visible HUD moved it the same way, ending 12 pt from
+  the volume capsule. The HUD stayed there after the banner left.
+- A HUD presented while a banner was showing appeared beside it without sliding.
+- In a real-device run, AirPods moving to iPhone showed the AirPods banner. The
+  AirPods devices left Core Audio 2.0 seconds later, the default input fell back
+  to the MacBook microphone, and the restoration HUD appeared beside the banner
+  within 50 ms of that change. It never overlapped the banner.
+- A display-brightness banner anchored under Control Center, with its host ending
+  20 pt beyond the display, was avoided from its measured frame.
+- A banner replaced during a slide reused its window at a new position; the HUD
+  followed to the new free position.
+- All 73 hostless tests and Debug / universal Release (arm64 + x86_64) builds
+  passed without warnings.
+
+Hover deferral, Reduce Motion, multiple displays, an auto-hidden menu bar,
+macOS 26, the keyboard-brightness banner with a visible HUD, and a restoration
+caused by AirPods connecting (rather than leaving) were not exercised in this run. Use
+`swift scripts/diagnostics/watch-system-banner-hosts.swift` to re-check the host
+signature on another macOS version.
 
 Validated on 2026-09-07 for the HUD material/window update:
 

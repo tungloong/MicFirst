@@ -48,7 +48,8 @@ struct HUDAnchor: Equatable, Codable {
     }
 }
 
-/// System menu geometry predicts a reserved region, never native HUD visibility.
+/// A menu-button rectangle from the Debug startup snapshot: the own-button fallback, and
+/// Sound/Control Center as diagnostic evidence. Banner avoidance reads live hosts instead.
 struct HUDSystemMenuAnchor: Codable, Equatable {
     let identifier: String
     let buttonFrame: CGRect
@@ -60,18 +61,6 @@ struct HUDSystemMenuAnchor: Codable, Equatable {
         } && buttonFrame.height <= 100
             && screenFrame.contains(CGPoint(x: buttonFrame.midX, y: buttonFrame.midY))
             && screenFrame.maxY - buttonFrame.midY <= 100
-    }
-
-    static func preferred(in anchors: [Self], on screen: CGRect) -> Self? {
-        let candidates = anchors.filter { $0.isValid && $0.screenFrame == screen }
-        return candidates.first { $0.identifier == "com.apple.menuextra.sound" }
-            ?? candidates.first { $0.identifier == "com.apple.menuextra.controlcenter" }
-    }
-
-    func capsuleFrame(on screen: CGRect, size: CGSize, inset: CGFloat) -> CGRect? {
-        guard isValid, screenFrame == screen, screen.width >= size.width + 2 * inset else { return nil }
-        let x = min(max(buttonFrame.midX - size.width / 2, screen.minX + inset), screen.maxX - inset - size.width)
-        return CGRect(x: x, y: screen.maxY - size.height, width: size.width, height: size.height)
     }
 }
 

@@ -1,15 +1,68 @@
 # Native AirPods HUD: interfaces, placement, and visual comparison
 
-Observed on 2026-09-07, macOS 27.0 (26A5416b), Xcode 27.
-These are observations of this OS build, not an Apple API contract.
+The September sections were observed on macOS 27.0 beta (26A5416b), the October 2
+section on macOS 27.0 (26A428), both with Xcode 27. These are observations of
+those OS builds, not an Apple API contract.
 
-Current behavior: [horizontal avoidance from startup menu-button snapshots](input-priority.md).
-The experiments below are historical. Lower-row reservations and delayed display
-have been removed. Diagnostic window candidates never drive placement. The retired
-standalone probe scripts and their local research artifacts were removed at closeout;
-the public menu-button helper remains part of the development startup workflow.
+Current behavior: [live avoidance of system banner hosts](input-priority.md).
+The September experiments below are historical. Lower-row reservations, delayed
+display and startup-snapshot prediction no longer drive placement. The retired
+standalone probe scripts and their local research artifacts were removed at the
+September closeout.
+
+## Banner host identified — October 2
+
+The user reopened the question on 2026-10-02. The MenuBarAgent popup that the
+September 8 capture recorded at 352×157 pt, level 101, is the banner host. It was
+left unvalidated then because no screenshot was taken at the same instant as the
+window list, and the first placement candidate treated the whole 157-pt canvas as
+the obstacle, which pushed MicFirst far below the capsule.
+
+Three sources agreed at 21:26:14 while a user-triggered AirPods banner
+("Moved to iPhone") was on screen:
+
+| Source | Result |
+| --- | --- |
+| Public `CGWindowListCopyWindowInfo` | MenuBarAgent window, level 101, on screen, (1305, 38, 352, 157) top-left points |
+| Accessibility, from an authorized development context | Window identifier `smart-routing-system-banner`, the same frame; dismiss button, image, two texts and a `arrow.uturn.backward` button inside |
+| Screenshot | Capsule at x 1364–1598, y 47–99: 235×52 pt, centered in the host, 9 pt below its top |
+
+The volume, display-brightness and keyboard-brightness banners use the same host
+size. Their Accessibility window identifiers were `volume-system-banner`,
+`display-brightness-system-banner`, and none. Their capsules measured 290×62 pt.
+Volume anchors under Sound; the two brightness banners anchored under Control
+Center, clamped 11 pt from the display edge, with the host ending 20 pt beyond
+the display. See [the measurement table](hud-anchor-diagnostics.md#live-banner-hosts).
+
+Accessibility supplied ground truth for this research only. MicFirst does not use
+it. The public window dictionary was identical for every banner kind (empty name,
+level 101, alpha 1, sharing state 1, store type 1, 2432 bytes), so the kind and
+capsule width cannot be read from it.
+
+A sandboxed Debug app launched through LaunchServices read the host and moved its
+HUD, including for two further user-triggered AirPods banners at 22:02:50 and
+22:04:08. A debugger attached to that process reported
+`CGPreflightScreenCaptureAccess() == false`, `AXIsProcessTrusted() == false` and
+the container `com.tenglong.MicFirst`. Window bounds, owner and level need no
+Screen Recording permission; only titles and images do.
+
+This also explains the lineage. AudioInputLocker's May 2026 code queried Control
+Center windows at level 2000+ on macOS 26. macOS 27 moved the host to MenuBarAgent
+at level 101, so that query matched nothing and the September work compared
+against it as the "legacy filter". Both signatures are now accepted.
+
+A menu-button position cannot predict the banner: the anchor button depends on
+the banner, the capsule is clamped to the display, and a replaced banner moves
+its window. Placement reads the live host frame instead.
+
+Not established: the macOS 26 signature on a current macOS 26 build, the capsule
+width of the low-battery and accessory banners, and other displays or an
+auto-hidden menu bar.
 
 ## Final private-API attempt — September 8, closed
+
+Superseded by the October 2 section: the MenuBarAgent popups recorded below were
+the banner host, and public enumeration was sufficient.
 
 At the user's request, an independent diagnostic used SkyLight's private
 `SLSMainConnectionID`, `SLSGetWindowCount`, `SLSGetWindowList`,

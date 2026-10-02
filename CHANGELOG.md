@@ -3,6 +3,20 @@
 Changes to MicFirst are recorded here. AudioInputLocker is a separate product;
 its release history remains in [its repository](https://github.com/tungloong/AudioInputLocker/releases).
 
+## Unreleased
+
+- The restoration HUD now moves aside while a system AirPods, volume, or
+  brightness banner is on screen, in shipped sandboxed builds as well as Debug.
+  It finds the banner's host window in public window metadata while the HUD is
+  visible; no permission, window title, or image is involved.
+- A HUD presented while a banner is showing appears beside it. A banner that
+  appears under a visible HUD makes it slide to the nearest free side of the same
+  row, where it stays until it is dismissed.
+- The Debug startup snapshot of Sound and Control Center positions no longer
+  drives placement. It remains as diagnostic evidence.
+- Added `scripts/diagnostics/watch-system-banner-hosts.swift` to re-check the
+  banner host on another macOS version.
+
 ## 1.0.0 - 2026-10-01
 
 - First public release: universal Developer ID signed and notarized DMG and ZIP,

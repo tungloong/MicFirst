@@ -63,7 +63,7 @@ AudioInputLocker 的现有下载属于它自己的产品。
 - 设置窗口保留带优先级序号的完整列表，支持排序、隐藏和删除离线设备。
 - 手动隐藏的设备不参与自动选择。
 - 手动选择其他设备会关闭自动模式，同时保留排序。
-- 确认自动恢复成功后显示短暂 HUD，定位在 MicFirst 自己的菜单栏图标下方，Debug 和 Release 都会显示，可在设置中关闭。
+- 确认自动恢复成功后显示短暂 HUD，定位在 MicFirst 自己的菜单栏图标下方；屏幕上有系统的 AirPods、音量或亮度横幅时会自动让到旁边。可在设置中关闭。
 - 支持英文和简体中文，并跟随系统语言。
 
 ## 系统要求
@@ -90,7 +90,7 @@ cd MicFirst
 
 这个脚本会构建 Debug app，停止正在运行的 `MicFirst` 和 `AudioInputLocker` 进程，然后从 `build/DerivedData` 打开新构建的 MicFirst app。
 
-HUD 直接根据 MicFirst 自己的菜单栏图标定位，不依赖外部辅助程序。Debug 脚本还会请一个公开的辅助功能 helper 读取声音和控制中心的位置，以便 HUD 避开系统横幅。这个 helper 需要当前环境已经授予辅助功能权限。如果它没能送达坐标，脚本会给出警告，HUD 仍然使用 MicFirst 自己的图标。正式发布的构建不会读取其他 App 的菜单栏按钮。详见 [HUD 行为与限制](docs/input-priority.md)。
+HUD 直接根据 MicFirst 自己的菜单栏图标定位，不依赖外部辅助程序。HUD 显示期间，它会读取公开的窗口元数据，找到系统的 AirPods、音量和亮度横幅并让开位置。这不需要任何权限，Debug 和正式发布的构建行为一致。Debug 脚本还会请一个公开的辅助功能 helper 读取声音和控制中心的位置，这些坐标只用作诊断证据；如果 helper 没能送达，脚本只会给出警告。详见 [HUD 行为与限制](docs/input-priority.md)。
 
 手动构建：
 
@@ -169,6 +169,7 @@ MicFirst 使用 SwiftUI、AppKit 和 Core Audio 构建。
 - 设备排序、已记住的设备信息和自动模式开关保存在本地 `UserDefaults`。
 - Mac App Store 版和直接下载版都启用了 App Sandbox。
 - HUD 使用无边框 `NSWindow`，位于普通弹出菜单之上，不获取 key/main 焦点。macOS 26+ 使用无 tint 的 clear 玻璃，底下叠加 0.80 不透明度的 Popover 材质以改善可读性。
+- HUD 显示期间会读取屏幕上窗口的位置、所属进程和层级，用来找到系统横幅。不读取窗口标题或画面，也不保存任何内容。
 - app 不使用私有 API。
 
 ## 隐私

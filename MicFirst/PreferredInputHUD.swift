@@ -11,21 +11,15 @@ protocol InputPriorityHUDPresenting: AnyObject {
 final class PreferredInputHUD: InputPriorityHUDPresenting {
     static let shared = PreferredInputHUD()
     weak var anchorProvider: HUDAnchorProviding?
-    private(set) var systemMenuAnchors: [HUDSystemMenuAnchor] = []
-
-    func updateSystemMenuAnchors(_ anchors: [HUDSystemMenuAnchor]) {
-        let valid = anchors.filter(\.isValid)
-        guard valid != systemMenuAnchors else { return }
-        systemMenuAnchors = valid
-        refreshPlacement()
-        #if DEBUG
-        HUDDiagnostics.shared.record(event: "system-menu-anchors-updated")
-        #endif
-    }
 
     private var window: PreferredInputHUDWindow?
     private var hideWorkItem: DispatchWorkItem?
     private let placement = HUDPlacement()
+    private var nativeHosts: [NativeHUDHost] = []
+    private var nativeHostWatch: Timer?
+    /// Where the window is, or is sliding to, and the own-anchor frame it was placed from.
+    private var placedFrame: CGRect?
+    private var placedAnchorFrame: CGRect?
     private var isPointerInside = false
     private var unlockAction: (() -> Void)?
     private var lockAction: (() -> Void)?
@@ -46,6 +40,9 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
         }
         static let hoverExitVisibleDuration: TimeInterval = 0.8
         static let unlockConfirmationDuration: TimeInterval = 1.4
+        // Only while the HUD is visible. One query costs about 0.2 ms.
+        static let nativeHostPollInterval: TimeInterval = 0.05
+        static let avoidanceSlideDuration: TimeInterval = 0.3
     }
 
     func show(
@@ -77,9 +74,11 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
             windowSize: PreferredInputHUDView.windowSize, capsuleSize: PreferredInputHUDView.capsuleSize,
             gap: Layout.standaloneGapBelowMenuBar
         )
+        // A new presentation starts from its own anchor, beside any banner already showing.
+        nativeHosts = NativeHUDProbe.visibleHosts()
         guard let initialFrame = placement.frame(
             anchoredAt: baseFrame, capsuleSize: PreferredInputHUDView.capsuleSize, on: anchor.screenFrame,
-            nativeAnchor: HUDSystemMenuAnchor.preferred(in: systemMenuAnchors, on: anchor.screenFrame)
+            avoiding: nativeHosts.map(\.occupiedFrame)
         ) else {
             hide()
             return
@@ -104,13 +103,15 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
 
         window.contentView = PreferredInputHUDContentView(rootView: rootView)
         window.appearance = nil
-        window.setFrame(initialFrame, display: true)
+        self.window = window
+        placedAnchorFrame = baseFrame
+        move(to: initialFrame, animated: false)
         window.ignoresMouseEvents = true
         window.alphaValue = 0
         window.orderFrontRegardless()
         window.startGlassAppearance()
-        self.window = window
         startMouseTracking()
+        startNativeHostWatch()
         updateWindowMouseInteractivity()
 
         NSAnimationContext.runAnimationGroup { context in
@@ -140,6 +141,7 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
         hideWorkItem?.cancel()
         hideWorkItem = nil
         stopMouseTracking()
+        stopNativeHostWatch()
         window?.stopGlassAppearance()
         #if DEBUG
         HUDDiagnostics.shared.record(event: "hud-hide-requested")
@@ -233,7 +235,7 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
 
     private func setPointerInside(_ isInside: Bool) {
         isPointerInside = isInside
-        if !isInside { refreshPlacement() }
+        if !isInside { refreshPlacement(animated: true) }
 
         if isInside {
             hideWorkItem?.cancel()
@@ -263,24 +265,67 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
         PreferredInputHUDWindow(contentSize: PreferredInputHUDView.windowSize)
     }
 
-    private func refreshPlacement() {
+    private func refreshPlacement(animated: Bool = false) {
         guard let window, window.isVisible else { return }
         guard let anchor = anchorProvider?.hudAnchor() else { hide(); return }
         let baseFrame = anchor.normalWindowFrame(
             windowSize: PreferredInputHUDView.windowSize, capsuleSize: PreferredInputHUDView.capsuleSize,
             gap: Layout.standaloneGapBelowMenuBar
         )
+        // A moved menu icon or display change re-places from the new anchor.
         guard let frame = placement.frame(
             anchoredAt: baseFrame, capsuleSize: PreferredInputHUDView.capsuleSize, on: anchor.screenFrame,
-            nativeAnchor: HUDSystemMenuAnchor.preferred(in: systemMenuAnchors, on: anchor.screenFrame)
+            avoiding: nativeHosts.map(\.occupiedFrame),
+            keeping: baseFrame == placedAnchorFrame ? placedFrame : nil
         ) else {
             hide()
             return
         }
-        if frame != window.frame {
-            window.setFrame(frame, display: true)
-            updateWindowMouseInteractivity()
+        placedAnchorFrame = baseFrame
+        if frame != placedFrame {
+            // Slide only within the row; a different display or menu-bar height jumps.
+            move(to: frame, animated: animated && frame.minY == placedFrame?.minY)
         }
+    }
+
+    private func move(to frame: CGRect, animated: Bool) {
+        guard let window else { return }
+        placedFrame = frame
+        let slides = animated && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        // The animator also supersedes a slide that is still in flight.
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = slides ? Timing.avoidanceSlideDuration : 0
+            context.timingFunction = CAMediaTimingFunction(controlPoints: 0.2, 0.9, 0.3, 1)
+            window.animator().setFrame(frame, display: true)
+        } completionHandler: { [weak self] in
+            MainActor.assumeIsolated { self?.updateWindowMouseInteractivity() }
+        }
+    }
+
+    private func startNativeHostWatch() {
+        stopNativeHostWatch()
+        let timer = Timer(timeInterval: Timing.nativeHostPollInterval, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.pollNativeHosts() }
+        }
+        timer.tolerance = 0.01
+        RunLoop.main.add(timer, forMode: .common)
+        nativeHostWatch = timer
+    }
+
+    private func stopNativeHostWatch() {
+        nativeHostWatch?.invalidate()
+        nativeHostWatch = nil
+    }
+
+    private func pollNativeHosts() {
+        let hosts = NativeHUDProbe.visibleHosts()
+        guard hosts != nativeHosts else { return }
+        nativeHosts = hosts
+        // A hovered HUD keeps still; pointer exit refreshes its placement.
+        if !isPointerInside { refreshPlacement(animated: true) }
+        #if DEBUG
+        HUDDiagnostics.shared.record(event: "native-hosts-changed")
+        #endif
     }
 
     #if DEBUG

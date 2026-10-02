@@ -75,7 +75,7 @@ AudioInputLocker's existing downloads belong to that separate product.
 - Provides Settings with the full numbered priority list, menu visibility controls, and offline deletion.
 - Excludes manually hidden devices from automatic selection.
 - Turns automatic mode off for manual selections while preserving the order.
-- Shows a configurable transient HUD after confirming an automatic restoration. The HUD anchors to MicFirst's own menu icon in Debug and Release. It can be turned off in Settings.
+- Shows a configurable transient HUD after confirming an automatic restoration. The HUD anchors to MicFirst's own menu icon and moves aside while a system AirPods, volume, or brightness banner is on screen. It can be turned off in Settings.
 - Supports English and Simplified Chinese, following the system language.
 
 ## Requirements
@@ -105,13 +105,13 @@ The script builds the Debug app, stops any running `MicFirst` and
 `AudioInputLocker` processes, and opens the freshly built MicFirst app from
 `build/DerivedData`.
 
-The HUD anchors to MicFirst's own menu icon without an external helper. The
-Debug script also asks a public Accessibility helper for Sound and Control
-Center positions so the HUD can move aside from the system banner. That helper
-needs an already-authorized Accessibility context. If it cannot deliver, the
-script warns and the HUD still uses MicFirst's own icon. Shipped builds do not
-read other apps' menu buttons. See
-[HUD behavior and limits](docs/input-priority.md).
+The HUD anchors to MicFirst's own menu icon without an external helper. While
+it is visible, it reads public window metadata to find the system's AirPods,
+volume, and brightness banners and stays out of their way. That needs no
+permission and works the same in Debug and shipped builds. The Debug script also
+asks a public Accessibility helper for Sound and Control Center positions; they
+are diagnostic evidence only, and the script just warns if the helper cannot
+deliver. See [HUD behavior and limits](docs/input-priority.md).
 
 Manual build:
 
@@ -203,6 +203,9 @@ MicFirst is built with SwiftUI, AppKit, and Core Audio.
 - The HUD uses a borderless `NSWindow` above ordinary pop-up menus and refuses
   key/main focus. On macOS 26+, untinted clear glass sits over Popover material
   at 0.80 opacity for readability.
+- While the HUD is visible, the bounds, owner, and level of on-screen windows are
+  read to find system banners. No window title or image is read, and nothing is
+  stored.
 - The app does not use private APIs.
 
 ## Privacy
