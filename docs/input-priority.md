@@ -209,6 +209,28 @@ This Debug-only trigger uses the preview's simulated current device. The HUD
 keeps its normal lifetime and hover behavior; its priority button operates on
 the isolated preview model.
 
+Validated on 2026-10-03 for the review fixes (macOS 27.0, build 26A428, real
+devices, sandboxed Debug build in real mode). The user ran the steps from 23:49 to
+23:53; the window list, screenshots and unified log were compared afterwards:
+
+- With the built-in microphone first, five AirPods connections were each restored
+  by MicFirst. Each HUD appeared beside the AirPods banner, never overlapped it,
+  and hid itself about 4.3 seconds after its last presentation.
+- When Smart Routing changed the route again while the HUD was visible (23:49:44
+  and 23:51:58), MicFirst presented it again in place. Its alpha never dropped, so
+  it did not blink.
+- A hovered HUD stayed for up to 11 seconds and did not move for volume banners.
+  On pointer exit it slid aside within 30 ms while a banner was still showing,
+  then hid about 0.8 seconds later. After the user turned Input Priority off and
+  on with the HUD's lock button, the HUD hid normally once the pointer left.
+- With AirPods first, a connection and a departure caused no write and no HUD.
+  Picking the Mac speakers in the Sound menu while they were worn kept the
+  AirPods microphone and showed the HUD.
+- Seven departures, out of the ears or into the case, caused no write.
+
+Reduce Motion, multiple displays (the test Mac had one), an auto-hidden menu bar
+and macOS 26 were not exercised.
+
 Validated on 2026-10-03 for route changes and HUD triggers (macOS 27.0, build
 26A428, real devices, sandboxed Debug app):
 
