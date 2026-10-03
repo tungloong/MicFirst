@@ -33,7 +33,7 @@ uses the first available device and restores it after external route changes.
 </p>
 
 <p align="center">
-  <img src="docs/assets/screenshots/store-en-02.png" width="720" alt="MicFirst switching back after AirPods take over the input">
+  <img src="docs/assets/screenshots/store-en-02.png" width="720" alt="MicFirst switching back after Bluetooth headphones take over the input">
 </p>
 
 <p align="center">

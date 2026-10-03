@@ -27,7 +27,7 @@ macOS 已经有一个原生风格的声音输出菜单，但没有一个同样�
 </p>
 
 <p align="center">
-  <img src="docs/assets/screenshots/store-zh-02.png" width="720" alt="AirPods 抢走输入后 MicFirst 自动切回">
+  <img src="docs/assets/screenshots/store-zh-02.png" width="720" alt="蓝牙耳机抢走输入后 MicFirst 自动切回">
 </p>
 
 <p align="center">
