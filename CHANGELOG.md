@@ -12,8 +12,10 @@ its release history remains in [its repository](https://github.com/tungloong/Aud
 - A HUD presented while a banner is showing appears beside it. A banner that
   appears under a visible HUD makes it slide to the nearest free side of the same
   row, where it stays until it is dismissed.
-- The Debug startup snapshot of Sound and Control Center positions no longer
-  drives placement. It remains as diagnostic evidence.
+- Retired the Debug-only Accessibility startup helper. Placement no longer used
+  its Sound and Control Center positions, and the HUD reads MicFirst's own icon
+  from its status-bar window, so Debug launches skip the helper's compile step
+  and 10-second handshake and no longer need an Accessibility-authorized terminal.
 - Added `scripts/diagnostics/watch-system-banner-hosts.swift` to re-check the
   banner host on another macOS version.
 - The HUD now appears only when MicFirst itself changes the input. When a device

@@ -105,13 +105,10 @@ The script builds the Debug app, stops any running `MicFirst` and
 `AudioInputLocker` processes, and opens the freshly built MicFirst app from
 `build/DerivedData`.
 
-The HUD anchors to MicFirst's own menu icon without an external helper. While
-it is visible, it reads public window metadata to find the system's AirPods,
-volume, and brightness banners and stays out of their way. That needs no
-permission and works the same in Debug and shipped builds. The Debug script also
-asks a public Accessibility helper for Sound and Control Center positions; they
-are diagnostic evidence only, and the script just warns if the helper cannot
-deliver. See [HUD behavior and limits](docs/input-priority.md).
+The HUD anchors to MicFirst's own menu icon. While it is visible, it reads public
+window metadata to find the system's AirPods, volume, and brightness banners and
+stays out of their way. That needs no permission and works the same in Debug and
+shipped builds. See [HUD behavior and limits](docs/input-priority.md).
 
 Manual build:
 

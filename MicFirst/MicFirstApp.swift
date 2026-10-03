@@ -25,7 +25,6 @@ final class MicFirstAppDelegate: NSObject, NSApplicationDelegate {
     let statusController = StatusItemController()
     #if DEBUG
     private var didShowPreview = false
-    private var menuAnchorReceiver: HUDMenuAnchorReceiver?
     #endif
 
     override init() {
@@ -71,14 +70,6 @@ final class MicFirstAppDelegate: NSObject, NSApplicationDelegate {
         }
         controller.start()
         #if DEBUG
-        let receiver = HUDMenuAnchorReceiver { [weak controller] anchors in
-            guard let controller, controller.update(anchors) else { return false }
-            HUDDiagnostics.shared.systemMenuAnchors = anchors.filter(\.isValid)
-            HUDDiagnostics.shared.record(event: "system-menu-anchors-updated")
-            return true
-        }
-        menuAnchorReceiver = receiver
-        receiver.start()
         HUDDiagnostics.shared.start(
             anchor: { [weak controller] in controller?.hudAnchor() },
             presentation: { PreferredInputHUD.shared.diagnosticPresentation() }
@@ -103,7 +94,6 @@ final class MicFirstAppDelegate: NSObject, NSApplicationDelegate {
         statusController.stop()
         #if DEBUG
         HUDDiagnostics.shared.stop()
-        menuAnchorReceiver?.stop()
         #endif
     }
 

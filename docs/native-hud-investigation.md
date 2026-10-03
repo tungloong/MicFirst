@@ -121,9 +121,10 @@ contracts. The APIs (`AXUIElementCreateApplication`,
 `AXUIElementCopyAttributeValue`, `AXValueGetValue`) are public. Coordinates use
 top-left screen points; use position.x + size.width / 2 for horizontal anchoring.
 
-Reproduce with `swift scripts/diagnostics/read-system-menu-anchors.swift`.
-The retained script now reports Sound, Control Center and MicFirst
-menu-button geometry, without walking their popup/app children. It neither prompts for permissions nor changes menu settings.
+The probe behind these measurements later ran as a Debug startup helper,
+`scripts/diagnostics/read-system-menu-anchors.swift`. It was retired on
+2026-10-03, once placement read the live banner host instead of predicting it
+from these buttons.
 
 The diagnostic execution context reported `AXIsProcessTrusted() == true`.
 MicFirst itself remains App Sandboxed and was not tested as an AX client here.

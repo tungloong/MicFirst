@@ -1,4 +1,4 @@
-# HUD anchors, live banner hosts, and read-only diagnostics
+# HUD anchor, live banner hosts, and read-only diagnostics
 
 Current behavior is defined in [input-priority.md](input-priority.md). The HUD
 uses untinted clear Liquid Glass over Popover material at 0.80, appears immediately
@@ -64,33 +64,6 @@ swift scripts/diagnostics/watch-system-banner-hosts.swift
 It prints MenuBarAgent and Control Center windows above the menu bar as they come
 and go. Press a volume or brightness key, or connect AirPods, while it runs.
 
-## Debug startup snapshot
-
-In a Debug development run, `scripts/build-and-run.sh` also runs
-`scripts/diagnostics/read-system-menu-anchors.swift` once:
-
-1. Builds the app and the helper.
-2. Restarts MicFirst and waits up to 10 seconds for its process to appear.
-3. The helper waits for launch and retries public Accessibility geometry for
-   Sound, Control Center, and MicFirst's own menu button.
-4. It retries delivery at 250 ms intervals, within a 10-second deadline, until
-   the app acknowledges a snapshot containing a usable own-button anchor. Empty,
-   invalid, or temporarily unusable snapshots do not consume the receiver.
-5. It confirms receipt of that acknowledgement, then exits. The app removes its
-   receiver after this confirmation, or after a 30-second startup deadline if
-   the helper disappears. Repeated deliveries are acknowledged without replacing
-   the accepted snapshot.
-
-The helper needs an already-authorized Accessibility execution context. It never
-prompts, changes settings, reads popup contents, or polls after startup delivery.
-If authorization is missing or delivery times out, the launch script warns and
-continues.
-
-The snapshot does not drive placement. It supplies an own-button fallback only
-while the status-bar window is not available yet, and Sound and Control Center
-positions for the diagnostic log. Automatic microphone priority works
-independently of the helper and the HUD.
-
 ## Opt-in diagnostic commands
 
 ```sh
@@ -122,9 +95,8 @@ UIDs. It makes no private service calls and requests no additional permission.
 
 | Field | Meaning |
 | --- | --- |
-| `anchor.buttonFrame` | MicFirst button rectangle from its own status-bar window, or the startup snapshot when that window is not available yet |
-| `anchor.statusWindowFrame` | Menu-region rectangle derived from the snapshot and current screen work area; not a foreign NSWindow frame |
-| `systemMenuAnchors` | Validated startup menu-button snapshots; evidence only |
+| `anchor.buttonFrame` | MicFirst button rectangle from its own status-bar window |
+| `anchor.statusWindowFrame` | Menu-region rectangle derived from that button and the current screen work area; not a foreign NSWindow frame |
 | `hud.hostFrame` / `hud.capsuleFrame` | Actual own-window geometry and visible capsule |
 | `capsuleCenterDeltaFromButton` | Horizontal displacement including intentional avoidance; assess while visible |
 | `nativeHosts[].frame` | A matching banner host, in AppKit points |
@@ -133,7 +105,7 @@ UIDs. It makes no private service calls and requests no additional permission.
 Rectangles use AppKit bottom-left screen points. `backingScale` is recorded
 separately; window coordinates are not multiplied by it. Records distinguish
 simulated from real devices and include restoration confirmation, preview requests,
-anchor delivery, presentation, host changes, skipped requests and dismissal events.
+presentation, host changes, skipped requests and dismissal events.
 
 To show the HUD on demand in a Debug run, post `MicFirst.ShowPreferredInputHUD`
 as described under Validation in [input-priority.md](input-priority.md).
@@ -151,7 +123,6 @@ supersede that closure.
 
 Current tests cover fixed-height/horizontal geometry, screen edges, nearest-side
 selection, staying aside after a banner leaves, host predicates and coordinate
-conversion, snapshot validation, incomplete-snapshot retries, duplicate delivery
-acknowledgements, receiver cleanup, HUD preference migration, event-only
+conversion, own-button selection, HUD preference migration, event-only
 appearance bursts, and microphone route regressions. Real multi-display,
 auto-hide, macOS 26 and future OS behavior still require device validation.

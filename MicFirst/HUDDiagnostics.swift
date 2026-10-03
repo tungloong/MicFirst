@@ -10,19 +10,15 @@ final class HUDDiagnostics {
     static let shared = HUDDiagnostics()
     static var isEnabled: Bool { ProcessInfo.processInfo.arguments.contains("--hud-diagnostics") }
 
-    /// Startup menu-button snapshot. Evidence only: placement follows live banner hosts.
-    var systemMenuAnchors: [HUDSystemMenuAnchor] = []
-
     private struct Snapshot: Codable {
         let anchor: HUDAnchor?
-        let systemMenuAnchors: [HUDSystemMenuAnchor]
         let hud: HUDDiagnosticPresentation
         let nativeHosts: [NativeHUDHost]
         let capsuleCenterDeltaFromButton: CGFloat?
     }
 
     private struct Record: Encodable {
-        let schemaVersion = 2
+        let schemaVersion = 3
         let systemVersion: String
         let deviceSource: String
         let timestamp: Date
@@ -87,8 +83,7 @@ final class HUDDiagnostics {
         let anchor = anchor?()
         let hud = presentation()
         let snapshot = Snapshot(
-            anchor: anchor, systemMenuAnchors: systemMenuAnchors, hud: hud,
-            nativeHosts: NativeHUDProbe.visibleHosts(),
+            anchor: anchor, hud: hud, nativeHosts: NativeHUDProbe.visibleHosts(),
             capsuleCenterDeltaFromButton: hud.capsuleFrame.flatMap { frame in anchor.map { frame.midX - $0.buttonFrame.midX } }
         )
         guard let signature = try? encoder.encode(snapshot) else { return }

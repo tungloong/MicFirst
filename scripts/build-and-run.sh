@@ -33,11 +33,6 @@ xcodebuild \
   -derivedDataPath "$DERIVED_DATA_PATH" \
   build
 
-if [[ "$CONFIGURATION" == "Debug" ]]; then
-  HELPER_PATH="$DERIVED_DATA_PATH/read-system-menu-anchors"
-  xcrun swiftc "$ROOT_DIR/scripts/diagnostics/read-system-menu-anchors.swift" -o "$HELPER_PATH"
-fi
-
 # Stop the previous product name too, so only one input guardian remains active.
 pkill -x AudioInputLocker 2>/dev/null || true
 pkill -x MicFirst 2>/dev/null || true
@@ -73,13 +68,5 @@ done
 if [[ -z "$APP_PID" ]]; then
   echo "MicFirst did not start within 10 seconds." >&2
   exit 1
-fi
-if [[ "$CONFIGURATION" == "Debug" ]]; then
-  # The HUD anchors to MicFirst's own menu icon and avoids live system banners
-  # without this helper. The helper supplies an own-button fallback and
-  # Sound/Control Center positions for diagnostics.
-  if ! "$HELPER_PATH" --deliver "$APP_PID"; then
-    echo "The startup menu-button snapshot was not delivered. The HUD still anchors to MicFirst's own menu icon and avoids live system banners." >&2
-  fi
 fi
 printf '%s\n' "$APP_PID"

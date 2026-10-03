@@ -90,7 +90,7 @@ cd MicFirst
 
 这个脚本会构建 Debug app，停止正在运行的 `MicFirst` 和 `AudioInputLocker` 进程，然后从 `build/DerivedData` 打开新构建的 MicFirst app。
 
-HUD 直接根据 MicFirst 自己的菜单栏图标定位，不依赖外部辅助程序。HUD 显示期间，它会读取公开的窗口元数据，找到系统的 AirPods、音量和亮度横幅并让开位置。这不需要任何权限，Debug 和正式发布的构建行为一致。Debug 脚本还会请一个公开的辅助功能 helper 读取声音和控制中心的位置，这些坐标只用作诊断证据；如果 helper 没能送达，脚本只会给出警告。详见 [HUD 行为与限制](docs/input-priority.md)。
+HUD 直接根据 MicFirst 自己的菜单栏图标定位。HUD 显示期间，它会读取公开的窗口元数据，找到系统的 AirPods、音量和亮度横幅并让开位置。这不需要任何权限，Debug 和正式发布的构建行为一致。详见 [HUD 行为与限制](docs/input-priority.md)。
 
 手动构建：
 

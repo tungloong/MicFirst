@@ -107,28 +107,14 @@ not replay old events.
 
 **Own icon.** The HUD reads MicFirst's menu-bar button from this process's
 status-bar window at presentation time. Debug, Release, and a sandboxed launch
-all use that frame, so the HUD no longer depends on an external helper to appear.
-Moving the menu icon is picked up on the next presentation. No entitlement,
-private API, or permission prompt is used.
+all use that frame and place the HUD the same way. Moving the menu icon is picked
+up on the next presentation. No entitlement, private API, or permission prompt
+is used.
 
-**The Debug startup snapshot is diagnostic.** `build-and-run.sh` still invokes
-an external public-Accessibility helper once per Debug launch. Within a
-10-second deadline it reads Sound and Control Center geometry, plus MicFirst's
-own button as a fallback, and retries until the app acknowledges a usable
-own-button anchor. Invalid or incomplete snapshots leave the receiver open.
-Retries share a delivery ID so a lost acknowledgement can be repeated without
-applying the snapshot again. The helper confirms acknowledgement and exits; the
-app removes its receiver on confirmation, with a 30-second startup cleanup
-deadline for abandoned handshakes. The helper needs an already-authorized
-Accessibility execution context. If it cannot deliver, the launch script warns
-and nothing about placement changes.
-
-The snapshot no longer drives placement. Its Sound and Control Center positions
-are recorded in opt-in diagnostics, and its own-button rectangle is a fallback
-only while the status-bar window is not available yet. A banner can anchor to
-either button and its host can extend past the display, so a button position
-does not predict the banner. Debug and shipped builds place the HUD the same way.
-See [native HUD investigation](native-hud-investigation.md) for the measurements.
+No other menu button is read. A banner can anchor under Sound or Control Center
+and its host can extend past the display, so a button position does not predict
+the banner; see [native HUD investigation](native-hud-investigation.md) for the
+measurements.
 
 The HUD uses a borderless `NSWindow` at `NSWindow.Level.popUpMenu + 1`, above
 ordinary pop-up menus, and refuses actual key/main status. On macOS 26+, each
