@@ -8,7 +8,7 @@ Screenshots: 2880x1800, upload in number order.
 
 Promotional text can change any time; subtitle, keywords, description and What's New go out with the next version.
 
-Revised after the 1.0.1 (2) rejection on 2026-10-02 (guidelines 5.2.5 and 2.3.7): no Apple product names anywhere in the metadata, and no "free" outside the description. Screenshots 1, 2 and 5 were redone; the AirPods status icon is gone from the menu bar strip. Device names inside the real app captures are left as they are.
+Revised after the 1.0.1 (2) rejection on 2026-10-02 (guidelines 5.2.5 and 2.3.7): no Apple product names anywhere in the metadata, and no "free". Developer terms (open source, GitHub, MIT) are also out of the store copy; the code being public is said in plain words in the privacy section. Screenshots 1, 2 and 5 were redone; the AirPods status icon is gone from the menu bar strip. Device names inside the real app captures are left as they are.
 
 ## English (U.S.)
 
@@ -16,13 +16,13 @@ Subtitle:
 Auto-switch to your best mic
 
 Promotional text:
-Mic switched mid-call? MicFirst puts your microphones in priority order and switches back automatically. Open source, no data collected.
+Mic switched mid-call? MicFirst puts your microphones in priority order and switches back automatically. It never records audio or collects data.
 
 Keywords (no trademarks; "auto" moved to the subtitle):
 microphone,input,switcher,default,bluetooth,podcast,headset,usb,priority,voice,device,meeting,call
 
 Description:
-Your Bluetooth headphones connect, and suddenly your video call is using their mic instead of the USB microphone on your desk. You notice five minutes into the call, or after the podcast is recorded.
+Your wireless earbuds connect, and suddenly your video call is using their mic instead of the USB microphone on your desk. You notice five minutes into the call, or after the podcast is recorded.
 
 MicFirst fixes that. Put your microphones in the order you want them, and MicFirst keeps the best available one selected as the Mac's default input.
 
@@ -42,10 +42,7 @@ YOU STAY IN CONTROL
 • Offline devices are remembered, keep their place, and step aside after five minutes.
 
 PRIVATE BY DESIGN
-MicFirst never records, listens to or uploads audio. It only chooses which input macOS uses. No accounts, no analytics, no network access. Data Not Collected.
-
-FREE AND OPEN SOURCE
-MicFirst is free, with no ads or in-app purchases. The source code is on GitHub under the MIT License.
+MicFirst never records, listens to or uploads audio. It only chooses which input macOS uses. No accounts, no analytics, no network access, no ads, no in-app purchases. Data Not Collected. The code is public, so anyone can check exactly what it does.
 
 Requires macOS 13 or later. Available in English and Simplified Chinese.
 
@@ -54,7 +51,7 @@ MicFirst now keeps your microphone where you want it:
 • Set an order for all your mics and MicFirst always uses the best one that is connected.
 • If Bluetooth headphones or another app take over the input, MicFirst switches it back and tells you.
 • Hide inputs you never want used.
-Thanks for trying MicFirst. Feedback and ideas are welcome on GitHub.
+Thanks for trying MicFirst. Feedback and ideas are welcome via the App Support link.
 
 ## 简体中文
 
@@ -62,13 +59,13 @@ Thanks for trying MicFirst. Feedback and ideas are welcome on GitHub.
 自动切换到首选麦克风
 
 宣传文本：
-通话中麦克风又被耳机抢走？MicFirst 按你设定的优先级自动切回首选麦克风。开源、不收集任何数据。
+通话中麦克风又被耳机抢走？MicFirst 按你设定的优先级自动切回首选麦克风。不录音，不收集任何数据。
 
 关键词（不含商标；「切换」已在副标题里）：
 话筒,输入设备,直播,声卡,蓝牙,耳机,会议,录音,播客,网课,优先级,外接,USB
 
 描述：
-蓝牙耳机一连上，会议软件就悄悄改用了耳机上的麦克风，桌上那支 USB 麦克风成了摆设。等你发现时，会已经开了五分钟，或者播客已经录完了。
+无线耳机一连上，会议软件就悄悄改用了耳机上的麦克风，桌上那支 USB 麦克风成了摆设。等你发现时，会已经开了五分钟，或者播客已经录完了。
 
 MicFirst 就是为此而做的。把你的麦克风排好顺序，MicFirst 会始终把排在最前、且已连接的那一个设为 Mac 的默认输入。
 
@@ -88,10 +85,7 @@ macOS 菜单栏有管扬声器和耳机的“声音”菜单，却没有管麦�
 • 离线设备会被记住并保留位置，五分钟后从菜单中收起。
 
 隐私优先
-MicFirst 从不录音、监听或上传任何声音，只负责选择 macOS 使用哪个输入设备。无账号、无统计、不联网，不收集任何数据。
-
-免费开源
-没有广告，没有内购。源代码以 MIT 许可证发布在 GitHub。
+MicFirst 从不录音、监听或上传任何声音，只负责选择 macOS 使用哪个输入设备。无账号、无统计、不联网，不收集任何数据。没有广告，也没有内购。代码完全公开，任何人都能查看它到底做了什么。
 
 需要 macOS 13 或更高版本。支持简体中文和英文。
 
@@ -100,4 +94,4 @@ MicFirst 让麦克风乖乖待在你选的位置：
 • 为所有麦克风设定顺序，始终使用已连接的最佳设备。
 • 蓝牙耳机或其他 App 抢走输入时，自动切回并提示你。
 • 可隐藏不想使用的输入设备。
-感谢使用 MicFirst，欢迎在 GitHub 提出反馈和建议。
+感谢使用 MicFirst，欢迎通过「App 支持」链接反馈建议。
