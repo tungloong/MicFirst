@@ -63,9 +63,9 @@ version output is not overwritten. The script does not upload artifacts.
 
 Before publication, validate the mounted DMG and copied app, confirm GitHub CI
 passes for the release commit, and record any remaining runtime limitations.
-The HUD anchors to MicFirst's own menu icon in a Release build. It does not
-read other apps' menu buttons, so it does not claim separation from the system
-Sound banner. MicFirst 1.0.0 (build 1) was packaged this way on 2026-10-01 and
+The HUD anchors to MicFirst's own menu icon in a Release build. Release 1.0.0
+did not avoid the system Sound banner; later builds move aside from live banner
+hosts (see [input-priority.md](input-priority.md)). MicFirst 1.0.0 (build 1) was packaged this way on 2026-10-01 and
 checked on a real install: menu, priority switching, and the restoration HUD
 under the MicFirst icon. A team's first notarization can stay in progress for
 hours; later submissions finished in minutes.

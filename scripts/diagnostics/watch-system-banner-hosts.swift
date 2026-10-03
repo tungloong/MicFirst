@@ -5,12 +5,12 @@ import AppKit
 
 let owners = ["com.apple.MenuBarAgent", "com.apple.controlcenter"]
 let menuBarLevel = Int(CGWindowLevelForKey(.mainMenuWindow))
-let seconds = CommandLine.arguments.dropFirst().first.flatMap(Double.init) ?? 60
+let seconds = CommandLine.arguments.dropFirst().first.flatMap(Double.init).flatMap { $0.isNaN ? nil : $0 } ?? 60
 let started = ProcessInfo.processInfo.systemUptime
 func elapsed() -> String { String(format: "%6.2f", ProcessInfo.processInfo.systemUptime - started) }
 
 setbuf(stdout, nil)
-print("Watching for \(Int(seconds)) s. Press a volume or brightness key, or connect AirPods.")
+print("Watching \(seconds.isFinite && seconds < 1e9 ? "for \(Int(seconds)) s" : "until Ctrl-C"). Press a volume or brightness key, or connect AirPods.")
 var shown: [Int: String] = [:]
 while ProcessInfo.processInfo.systemUptime - started < seconds {
     var current: [Int: String] = [:]

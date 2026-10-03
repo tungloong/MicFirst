@@ -197,13 +197,14 @@ final class InputPriorityTests: XCTestCase {
         XCTAssertTrue(model.automaticInputIsEnabled)
     }
 
-    func testAppleDeviceAvailabilityDoesNotCreateAHUDWithoutRestoration() async {
+    func testAppleDeviceAvailabilityDoesNotCreateAHUDWithoutRestoration() async throws {
         let (model, audio, hud) = makeModel()
         audio.available.append(device(4, name: "AirPods", transport: kAudioDeviceTransportTypeBluetooth))
         await audio.emitChange()
         await audio.emitChange()
         audio.available.removeAll { $0.id == 4 }
         await audio.emitChange()
+        try await settled()
         XCTAssertTrue(hud.shownNames.isEmpty)
         XCTAssertTrue(audio.writes.isEmpty)
         XCTAssertTrue(model.automaticInputIsEnabled)
@@ -350,7 +351,8 @@ final class InputPriorityTests: XCTestCase {
     }
 
     func testOtherEventsWhileSettlingDoNotSwitchEarly() async throws {
-        let (model, audio, hud) = makeModel()
+        // A longer wait: this test checks across two event round trips that a stalled CI can delay.
+        let (model, audio, hud) = makeModel(settleDelay: 0.5)
         audio.available = [device(2), device(3)]
         audio.currentID = 2
         await audio.emitChange()
@@ -489,7 +491,7 @@ final class InputPriorityTests: XCTestCase {
         XCTAssertEqual(audio.currentID, 2)
     }
 
-    func testManualSelectionWhileFirstOfflineStaysOffOnReconnect() async {
+    func testManualSelectionWhileFirstOfflineStaysOffOnReconnect() async throws {
         let (model, audio, _) = makeModel()
         audio.available = [device(2), device(3)]
         audio.currentID = 2
@@ -497,6 +499,7 @@ final class InputPriorityTests: XCTestCase {
         model.selectDevice(uid: "3")
         audio.available = [device(1), device(2), device(3)]
         await audio.emitChange()
+        try await settled()
         XCTAssertFalse(model.automaticInputIsEnabled)
         XCTAssertEqual(audio.currentID, 3)
         model.setAutomaticInputEnabled(true)
@@ -659,12 +662,12 @@ final class InputPriorityTests: XCTestCase {
         XCTAssertEqual(audio.currentID, 1)
     }
 
-    private func makeModel() -> (AudioInputViewModel, FakeAudioManager, FakeHUD) {
+    private func makeModel(settleDelay: TimeInterval? = nil) -> (AudioInputViewModel, FakeAudioManager, FakeHUD) {
         let audio = FakeAudioManager()
         let hud = FakeHUD()
         let model = AudioInputViewModel(
             audioManager: audio, preferences: InputPriorityStore(defaults: defaults), hud: hud,
-            hotPlugSettleDelay: settle)
+            hotPlugSettleDelay: settleDelay ?? settle)
         return (model, audio, hud)
     }
 }

@@ -60,8 +60,10 @@ enum NativeHUDProbe {
             [.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID
         ) as? [[String: Any]] else { return [] }
         let primaryMaxY = NSScreen.screens.first(where: { $0.frame.origin == .zero })?.frame.maxY ?? 0
-        return hosts(in: infos, primaryScreenMaxY: primaryMaxY) {
-            NSRunningApplication(processIdentifier: $0)?.bundleIdentifier
+        let ownPID = ProcessInfo.processInfo.processIdentifier
+        return hosts(in: infos, primaryScreenMaxY: primaryMaxY) { pid in
+            // MicFirst's own HUD has a banner host's shape; skip it without a lookup.
+            pid == ownPID ? nil : NSRunningApplication(processIdentifier: pid)?.bundleIdentifier
         }
     }
 }

@@ -35,6 +35,7 @@ final class AudioInputViewModel: ObservableObject {
     private var menuRefreshWorkItem: DispatchWorkItem?
     private var settleWorkItem: DispatchWorkItem?
     private var settleToken: UUID?
+    private var settleDeadline: DispatchTime?
     private var restoration: Restoration?
     private var monitoredDeviceID: AudioDeviceID?
     private var suppressVolumeEchoUntil = Date.distantPast
@@ -205,6 +206,9 @@ final class AudioInputViewModel: ObservableObject {
                 // A device arrived or left and the route has not moved yet. The system usually
                 // follows within milliseconds; switching first would announce its own change.
                 awaitSystemRoute()
+            } else if currentDevice == nil, currentBefore != nil {
+                // The route was lost while its device is still listed; the departure usually follows.
+                awaitSystemRoute()
             } else if settleToken == nil {
                 enforcePriority(shouldNotify: true)
             }
@@ -214,25 +218,35 @@ final class AudioInputViewModel: ObservableObject {
         }
     }
 
-    private func awaitSystemRoute() {
+    private func awaitSystemRoute(retries: Int = 2) {
         settleWorkItem?.cancel()
+        let now = DispatchTime.now()
+        // Further hot-plug events extend the wait, but never past three settle periods.
+        let deadline = settleDeadline ?? now + hotPlugSettleDelay * 3
+        settleDeadline = deadline
         let token = UUID()
         settleToken = token
         let workItem = DispatchWorkItem { [weak self] in
             Task { @MainActor [weak self] in
                 guard let self, self.settleToken == token else { return }
                 self.cancelSettle()
-                self.refresh()
+                // A failed read is not evidence; look again instead of dropping the hot-plug.
+                if retries > 0, (try? self.audioManager.loadInputDevices()) == nil {
+                    self.awaitSystemRoute(retries: retries - 1)
+                } else {
+                    self.refresh()
+                }
             }
         }
         settleWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + hotPlugSettleDelay, execute: workItem)
+        DispatchQueue.main.asyncAfter(deadline: min(now + hotPlugSettleDelay, deadline), execute: workItem)
     }
 
     private func cancelSettle() {
         settleWorkItem?.cancel()
         settleWorkItem = nil
         settleToken = nil
+        settleDeadline = nil
     }
 
     private func applyLoadedDevices(_ loadedDevices: [InputDevice]) {

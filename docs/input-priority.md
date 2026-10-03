@@ -32,8 +32,10 @@ has not moved yet, MicFirst waits 0.3 seconds instead of switching first.
 - The system does not move the route within the wait: MicFirst selects the
   target when the wait ends and shows the HUD.
 
-A change of the default input while the same devices stay online is never
-delayed. Menu and Settings actions also act at once and stay silent.
+Further hot-plug events extend the wait to at most 0.9 seconds, and a failed
+device read at its end is retried. A default input that disappears while its device
+is still listed is treated like a departure. Any other change of the default input
+while the same devices stay online is never delayed. Menu and Settings actions also act at once and stay silent.
 
 Manual hiding persists across disconnects and relaunches. Automatic offline collapse
 does not change that preference. The Settings visibility checkbox reflects the
@@ -77,9 +79,10 @@ without any permission, also inside App Sandbox, so shipped builds avoid the
 banners too. While the HUD is visible, MicFirst reads the on-screen list every
 50 ms (about 0.2 ms per read) and keeps windows that are 260–560 × 70–190 pt,
 above the menu-bar level, not transparent, and owned by MenuBarAgent (macOS 27)
-or by Control Center at level 2000+ (the macOS 26 query). It reads owner, level,
-alpha and bounds only. No title, image or content is read, nothing is stored, and
-nothing is polled while the HUD is hidden.
+or by Control Center at level 2000+ (the macOS 26 query). It reads the window
+number, owner, level, alpha, on-screen flag and bounds only. No title, image or
+content is read. Outside opt-in Debug diagnostics (`--hud-diagnostics`), nothing
+is stored and nothing is polled while the HUD is hidden or hovered.
 
 The banner's capsule is centered in its host. Metadata does not say which banner
 is showing, so MicFirst keeps the widest measured capsule clear: the centered
@@ -94,7 +97,10 @@ is showing, so MicFirst keeps the widest measured capsule clear: the centered
   notification; never move it to a lower row.
 - A HUD that moved aside stays there after the banner leaves. The next
   presentation starts from the own anchor again.
-- A hovered HUD does not move; pointer exit re-evaluates its placement.
+- A hovered HUD does not move and pauses the read; pointer exit reads once and
+  re-evaluates its placement.
+- The HUD stays on the display it was presented on. Presenting again while it is
+  still visible keeps its position and does not fade it out first.
 
 No five-second delay remains: confirmed restoration notifications appear
 immediately. Route verification and the normal 4.2-second visible
@@ -108,7 +114,7 @@ not replay old events.
 **Own icon.** The HUD reads MicFirst's menu-bar button from this process's
 status-bar window at presentation time. Debug, Release, and a sandboxed launch
 all use that frame and place the HUD the same way. Moving the menu icon is picked
-up on the next presentation. No entitlement, private API, or permission prompt
+up on the next presentation or a display change. No entitlement, private API, or permission prompt
 is used.
 
 No other menu button is read. A banner can anchor under Sound or Control Center

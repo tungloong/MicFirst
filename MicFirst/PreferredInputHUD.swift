@@ -21,6 +21,10 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
     /// Where the window is, or is sliding to, and the own-anchor frame it was placed from.
     private var placedFrame: CGRect?
     private var placedAnchorFrame: CGRect?
+    /// The anchor of the current presentation. Banner changes and pointer exit keep its display.
+    private var placedAnchor: HUDAnchor?
+    /// True from presentation until hide() starts the fade.
+    private var isPresenting = false
     private var isPointerInside = false
     private var unlockAction: (() -> Void)?
     private var lockAction: (() -> Void)?
@@ -76,10 +80,13 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
             gap: Layout.standaloneGapBelowMenuBar
         )
         // A new presentation starts from its own anchor, beside any banner already showing.
+        // Presenting again while the HUD is still on screen updates it in place.
+        let isVisible = window?.isVisible == true
         nativeHosts = NativeHUDProbe.visibleHosts()
         guard let initialFrame = placement.frame(
             anchoredAt: baseFrame, capsuleSize: PreferredInputHUDView.capsuleSize, on: anchor.screenFrame,
-            avoiding: nativeHosts.map(\.occupiedFrame)
+            avoiding: nativeHosts.map(\.occupiedFrame),
+            keeping: isVisible && baseFrame == placedAnchorFrame ? placedFrame : nil
         ) else {
             hide()
             return
@@ -105,11 +112,13 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
         window.contentView = PreferredInputHUDContentView(rootView: rootView)
         window.appearance = nil
         self.window = window
+        placedAnchor = anchor
         placedAnchorFrame = baseFrame
         presentationCount += 1
+        isPresenting = true
         move(to: initialFrame, animated: false)
         window.ignoresMouseEvents = true
-        window.alphaValue = 0
+        if !isVisible { window.alphaValue = 0 }
         window.orderFrontRegardless()
         window.startGlassAppearance()
         startMouseTracking()
@@ -133,7 +142,7 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
     }
 
     func anchorDidChange() {
-        refreshPlacement()
+        refreshPlacement(reanchor: true)
         #if DEBUG
         HUDDiagnostics.shared.record(event: "status-item-geometry-changed")
         #endif
@@ -142,6 +151,7 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
     private func hide() {
         hideWorkItem?.cancel()
         hideWorkItem = nil
+        isPresenting = false
         stopMouseTracking()
         stopNativeHostWatch()
         window?.stopGlassAppearance()
@@ -205,7 +215,7 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
         }
     }
 
-    private func updateWindowMouseInteractivity() {
+    private func updateWindowMouseInteractivity(updatesHover: Bool = true) {
         guard let window,
               window.isVisible else {
             return
@@ -214,6 +224,7 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
         let point = window.convertPoint(fromScreen: NSEvent.mouseLocation)
         let acceptsMouse = PreferredInputHUDView.interactiveFrame.contains(point)
         window.ignoresMouseEvents = !acceptsMouse
+        guard updatesHover else { return }
 
         if acceptsMouse {
             if !isPointerInside {
@@ -235,19 +246,28 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
     }
 
     private func lock() {
+        let presentation = presentationCount
         lockAction?()
+        // Re-enabling usually presents the HUD again, which schedules its own hide.
+        guard presentationCount == presentation else { return }
         hideWorkItem?.cancel()
         hideWorkItem = nil
     }
 
     private func setPointerInside(_ isInside: Bool) {
         isPointerInside = isInside
-        if !isInside { refreshPlacement(animated: true) }
 
         if isInside {
+            // A hovered HUD keeps still, so it does not need to watch banners.
+            stopNativeHostWatch()
             hideWorkItem?.cancel()
             hideWorkItem = nil
         } else {
+            if isPresenting {
+                nativeHosts = NativeHUDProbe.visibleHosts()
+                startNativeHostWatch()
+                refreshPlacement(animated: true)
+            }
             scheduleHide(after: Timing.hoverExitVisibleDuration)
         }
     }
@@ -272,9 +292,11 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
         PreferredInputHUDWindow(contentSize: PreferredInputHUDView.windowSize)
     }
 
-    private func refreshPlacement(animated: Bool = false) {
+    private func refreshPlacement(animated: Bool = false, reanchor: Bool = false) {
         guard let window, window.isVisible else { return }
-        guard let anchor = anchorProvider?.hudAnchor() else { hide(); return }
+        // Only a display change looks for the icon again. The anchor read follows the
+        // pointer's display and can be briefly missing with a hidden menu bar.
+        guard let anchor = reanchor ? anchorProvider?.hudAnchor() : placedAnchor else { hide(); return }
         let baseFrame = anchor.normalWindowFrame(
             windowSize: PreferredInputHUDView.windowSize, capsuleSize: PreferredInputHUDView.capsuleSize,
             gap: Layout.standaloneGapBelowMenuBar
@@ -288,6 +310,7 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
             hide()
             return
         }
+        placedAnchor = anchor
         placedAnchorFrame = baseFrame
         if frame != placedFrame {
             // Slide only within the row; a different display or menu-bar height jumps.
@@ -305,7 +328,11 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
             context.timingFunction = CAMediaTimingFunction(controlPoints: 0.2, 0.9, 0.3, 1)
             window.animator().setFrame(frame, display: true)
         } completionHandler: { [weak self] in
-            MainActor.assumeIsolated { self?.updateWindowMouseInteractivity() }
+            MainActor.assumeIsolated {
+                // A slide neither revives a dismissed HUD nor counts as hover by itself.
+                guard let self, self.isPresenting else { return }
+                self.updateWindowMouseInteractivity(updatesHover: false)
+            }
         }
     }
 
@@ -328,8 +355,7 @@ final class PreferredInputHUD: InputPriorityHUDPresenting {
         let hosts = NativeHUDProbe.visibleHosts()
         guard hosts != nativeHosts else { return }
         nativeHosts = hosts
-        // A hovered HUD keeps still; pointer exit refreshes its placement.
-        if !isPointerInside { refreshPlacement(animated: true) }
+        refreshPlacement(animated: true)
         #if DEBUG
         HUDDiagnostics.shared.record(event: "native-hosts-changed")
         #endif

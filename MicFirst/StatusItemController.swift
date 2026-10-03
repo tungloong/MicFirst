@@ -1,7 +1,7 @@
 import AppKit
 
 /// SwiftUI owns MenuBarExtra. The HUD reads this process's status-bar window for
-/// MicFirst's own icon each time it is presented.
+/// MicFirst's own icon when it is presented and when the display configuration changes.
 @MainActor
 final class StatusItemController: HUDAnchorProviding {
     private var screenObserver: NSObjectProtocol?
