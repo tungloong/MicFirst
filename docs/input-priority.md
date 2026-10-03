@@ -239,9 +239,17 @@ Validated on 2026-10-03 for route changes and HUD triggers (macOS 27.0, build
   passed without warnings.
 
 The 0.3-second wait ending in a write by MicFirst, for a device the system does
-not select itself, was exercised only in hostless tests. The system releasing
-AirPods as input while they stay connected did not occur in this run; it counts
-as an external takeover, so MicFirst restores AirPods when they are first.
+not select itself, was exercised only in hostless tests.
+
+With ear detection on, AirPods exist as Core Audio devices only while a bud is in
+an ear. In this run both devices appeared within 50 ms of the first bud going in,
+and disappeared within 50 ms of the last bud coming out, 1.2 seconds before it
+reached the case. Taking them off is a departure, so MicFirst writes nothing.
+Moving the output elsewhere while they are worn is different: on 2026-10-02 the
+Mac speakers were picked in the Sound menu, macOS moved the input to the built-in
+microphone too, and the AirPods microphone stayed available. That counts as an
+external takeover, so with AirPods first MicFirst puts the input back on them,
+which keeps a speakers plus AirPods microphone setup.
 
 Validated on 2026-10-02 for live banner avoidance (macOS 27.0, build 26A428,
 sandboxed Debug app launched through LaunchServices; simulated devices unless
