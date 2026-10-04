@@ -16,13 +16,13 @@ Name (was "MicFirst"):
 MicFirst – Keep Your Mic First
 
 Subtitle:
-Stop devices hijacking input
+Audio input that never jumps
 
 Promotional text:
 Mic switched mid-call? MicFirst puts your microphones in priority order and switches back automatically. It never records audio or collects data.
 
 Keywords (no trademarks; no words already in the name or subtitle):
-microphone,switcher,default,headset,bluetooth,headphones,usb,audio,priority,podcast,meeting,call
+microphone,switcher,default,headset,bluetooth,headphones,usb,sound,priority,podcast,meeting,call
 
 Description:
 Your wireless earbuds connect, and suddenly your video call is using their mic instead of the USB microphone on your desk. You notice five minutes into the call, or after the podcast is recorded.
@@ -61,7 +61,7 @@ Thanks for trying MicFirst. Feedback and ideas are welcome via the App Support l
 ## 简体中文
 
 名称（原为“MicFirst”）：
-MicFirst – 保持你的首选麦克风
+MicFirst – 锁住你的首选麦克风
 
 副标题：
 音频输入设备不乱跳
