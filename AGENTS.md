@@ -8,6 +8,8 @@ available microphone selected. Use SwiftUI, AppKit, and Core Audio.
 - `./scripts/build-and-run.sh`: build and run the real app.
 - `./scripts/build-and-run.sh --preview`: isolated UI with simulated devices.
 - `./scripts/test.sh`: hostless priority and route regression tests.
+- HUD placement against real banners: `docs/hud-anchor-diagnostics.md`
+  (watch script, and unified-log checks for MicFirst's route writes).
 - Project/scheme: `MicFirst.xcodeproj` / `MicFirst`.
 - Runtime target: macOS 13+. Build with the macOS 26 SDK or newer.
 - Prefer the isolated preview for UI checks that do not need real audio routing.
@@ -21,6 +23,8 @@ available microphone selected. Use SwiftUI, AppKit, and Core Audio.
   `inputPriorityPreferences.v1` stays. `com.tungloong.AudioInputLocker` belongs
   to the retired AudioInputLocker product.
 - MicFirst currently does not capture, process, or transmit audio samples.
+- HUD banner avoidance reads public window metadata only. Keep private APIs,
+  Accessibility, and Screen Recording out of the app.
 - Do not commit build products, local preferences, credentials, or user data.
 
 ## Product and repository state

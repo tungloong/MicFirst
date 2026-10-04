@@ -33,9 +33,18 @@ has not moved yet, MicFirst waits 0.3 seconds instead of switching first.
   target when the wait ends and shows the HUD.
 
 Further hot-plug events extend the wait to at most 0.9 seconds, and a failed
-device read at its end is retried. A default input that disappears while its device
-is still listed is treated like a departure. Any other change of the default input
-while the same devices stay online is never delayed. Menu and Settings actions also act at once and stay silent.
+device read at its end is retried. A default input that disappears while its
+device is still listed is treated like a departure. Any other change of the
+default input while the same devices stay online is never delayed. Menu and
+Settings actions also act at once and stay silent.
+
+**AirPods.** With ear detection on, macOS lists AirPods as input and output
+devices only while a bud is in an ear, so taking them off is a departure and
+MicFirst writes nothing. Picking another output while they are worn also moves
+the input off them, but they stay available. That is an external takeover: with
+AirPods first, MicFirst puts the input back on them, which keeps a speaker
+output plus AirPods microphone setup. If ear detection is off, AirPods stay
+listed while connected and MicFirst keeps treating them as available.
 
 Manual hiding persists across disconnects and relaunches. Automatic offline collapse
 does not change that preference. The Settings visibility checkbox reflects the
@@ -96,7 +105,7 @@ is showing, so MicFirst keeps the widest measured capsule clear: the centered
   reserved region and inside the display. If neither side fits, skip the
   notification; never move it to a lower row.
 - A HUD that moved aside stays there after the banner leaves. The next
-  presentation starts from the own anchor again.
+  presentation after it hides starts from the own anchor again.
 - A hovered HUD does not move and pauses the read; pointer exit reads once and
   re-evaluates its placement.
 - The HUD stays on the display it was presented on. Presenting again while it is
@@ -114,8 +123,8 @@ not replay old events.
 **Own icon.** The HUD reads MicFirst's menu-bar button from this process's
 status-bar window at presentation time. Debug, Release, and a sandboxed launch
 all use that frame and place the HUD the same way. Moving the menu icon is picked
-up on the next presentation or a display change. No entitlement, private API, or permission prompt
-is used.
+up on the next presentation or a display change. No entitlement, private API, or
+permission prompt is used.
 
 No other menu button is read. A banner can anchor under Sound or Control Center
 and its host can extend past the display, so a button position does not predict
@@ -255,15 +264,12 @@ Validated on 2026-10-03 for route changes and HUD triggers (macOS 27.0, build
 The 0.3-second wait ending in a write by MicFirst, for a device the system does
 not select itself, was exercised only in hostless tests.
 
-With ear detection on, AirPods exist as Core Audio devices only while a bud is in
-an ear. In this run both devices appeared within 50 ms of the first bud going in,
-and disappeared within 50 ms of the last bud coming out, 1.2 seconds before it
-reached the case. Taking them off is a departure, so MicFirst writes nothing.
-Moving the output elsewhere while they are worn is different: on 2026-10-02 the
-Mac speakers were picked in the Sound menu, macOS moved the input to the built-in
-microphone too, and the AirPods microphone stayed available. That counts as an
-external takeover, so with AirPods first MicFirst puts the input back on them,
-which keeps a speakers plus AirPods microphone setup.
+Evidence for the **AirPods** rule above: both AirPods devices appeared within
+50 ms of the first bud going in, and disappeared within 50 ms of the last bud
+coming out, 1.2 seconds before it reached the case. On 2026-10-02 at 23:07:02 the
+Mac speakers were picked in the Sound menu while both buds were in; macOS moved
+the input to the built-in microphone, and the AirPods input stayed listed until
+the buds came out four seconds later.
 
 Validated on 2026-10-02 for live banner avoidance (macOS 27.0, build 26A428,
 sandboxed Debug app launched through LaunchServices; simulated devices unless

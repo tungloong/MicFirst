@@ -9,8 +9,9 @@ host is on screen in its row.
 
 SwiftUI owns the system `MenuBarExtra(.window)`. `StatusItemController` creates
 neither a status item nor a menu panel. It reads MicFirst's own button from this
-process's status-bar window whenever the HUD is presented. That read works in
-Debug, Release, and a sandboxed launch.
+process's status-bar window when the HUD is presented and when the display
+configuration changes; a visible HUD keeps that anchor otherwise. The read works
+in Debug, Release, and a sandboxed launch.
 
 For a persistent menu bar, the capsule's top is 9 pt below the work-area top.
 For an auto-hidden bar, the captured button bottom supplies the boundary; physical
@@ -22,7 +23,8 @@ a 6 pt inset; transparent hosting margins may extend offscreen.
 
 `NativeHUDProbe` reads `CGWindowListCopyWindowInfo` for on-screen windows and
 keeps Apple's banner hosts. The call is public, needs no permission, and works
-inside App Sandbox. MicFirst polls it every 50 ms only while its HUD is visible.
+inside App Sandbox. MicFirst polls it every 50 ms only while its HUD is visible
+and not hovered, and skips its own HUD window, which has a banner host's shape.
 
 | Predicate | Value |
 | --- | --- |
@@ -110,6 +112,31 @@ presentation, host changes, skipped requests and dismissal events.
 To show the HUD on demand in a Debug run, post `MicFirst.ShowPreferredInputHUD`
 as described under Validation in [input-priority.md](input-priority.md).
 
+## Checking against real banners and routes
+
+Banners on demand: press a volume key (at volume 0, volume down sets the mute
+flag, so restore it afterwards), press a brightness key down then up, or put
+AirPods in and take them out. Show the HUD on demand in a Debug run as described
+above, and watch hosts with `scripts/diagnostics/watch-system-banner-hosts.swift`.
+MicFirst's own HUD is the MicFirst window at level 102, 360×136 pt.
+
+Whether MicFirst wrote the route, or the system did, is in the unified log. In
+zsh, `log` is a builtin, so call `/usr/bin/log`:
+
+```sh
+/usr/bin/log show --last 10m --info --debug --style compact --predicate \
+  '(process == "MicFirst" AND eventMessage CONTAINS "DefaultInputDevice")
+   OR (process == "audioaccessoryd" AND eventMessage CONTAINS "route")
+   OR (process == "coreaudiod" AND eventMessage CONTAINS "SetDefaultDevice")'
+```
+
+Each `MicFirst ... SetData:kAudioHardwarePropertyDefaultInputDevice` line is a
+write by MicFirst. `audioaccessoryd` lines show Smart Routing and manual Sound
+menu choices; `coreaudiod` `SetDefaultDevice 'dIn '` lines show every default
+input change. Adding `process == "bluetoothd" AND eventMessage CONTAINS "in-ear"`
+shows AirPods ear states. macOS may block other apps from reading the JSONL
+container; the window list and the unified log need no container access.
+
 ## Evidence and limits
 
 A matching host means a banner window is on screen. It does not identify the
@@ -124,5 +151,8 @@ supersede that closure.
 Current tests cover fixed-height/horizontal geometry, screen edges, nearest-side
 selection, staying aside after a banner leaves, host predicates and coordinate
 conversion, own-button selection, HUD preference migration, event-only
-appearance bursts, and microphone route regressions. Real multi-display,
-auto-hide, macOS 26 and future OS behavior still require device validation.
+appearance bursts, and microphone route regressions. The HUD window lifecycle
+(presenting again in place, hover pausing the read, a slide finishing during a
+fade) has no hostless test and needs a check on a real Mac after changes. Real
+multi-display, auto-hide, macOS 26 and future OS behavior still require device
+validation.

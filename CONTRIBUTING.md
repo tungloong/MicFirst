@@ -49,6 +49,10 @@ For changes that affect input priority, please test at least one real input
 device switching scenario, such as AirPods auto-switching, System Settings
 changes, or USB microphone reconnects.
 
+For HUD placement or timing changes, check against a real system banner (a
+volume key or AirPods); `docs/hud-anchor-diagnostics.md` describes the watch
+script and how to tell MicFirst's route writes from the system's.
+
 ## Pull Requests
 
 - Keep changes focused and easy to review.

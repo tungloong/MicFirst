@@ -55,5 +55,3 @@ its release history remains in [its repository](https://github.com/tungloong/Aud
   `inputPriorityPreferences.v1`.
 - Recorded the 2026-09-07 decision not to pursue multi-microphone mixing/fusion
   in the near term; see [product decisions](docs/product-decisions.md).
-
-No MicFirst binary release has been published yet.

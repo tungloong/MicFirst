@@ -168,13 +168,18 @@ receive a connection suffix so they can be distinguished.
 - `MicFirst/AudioInputViewModel.swift`: route coordination, volume, and verified restoration.
 - `MicFirst/InputPriorityStore.swift`: persistent order, discovery, and legacy migration.
 - `MicFirst/PreferredInputHUD.swift`: restoration HUD presentation.
+- `MicFirst/NativeHUDProbe.swift`, `MicFirst/HUDPlacement.swift`: live system banner hosts and HUD avoidance.
+- `MicFirst/StatusItemController.swift`, `MicFirst/HUDAnchor.swift`: HUD anchor from MicFirst's own menu icon.
 - `MicFirstTests/InputPriorityTests.swift`: isolated priority and route regression tests.
 - `docs/input-priority.md`: behavior, testing, and design reference.
+- `docs/hud-anchor-diagnostics.md`: HUD anchor, banner host signature, and real-device checks.
+- `docs/native-hud-investigation.md`: how the system banner host was identified, with earlier attempts as history.
 - `MicFirst/CoreAudioInputManager.swift`: Core Audio wrapper.
 - `MicFirst/InputDevice.swift`: input device model and icon heuristics.
 - `MicFirst/HUDMicrophone.png`: HUD microphone asset.
 - `MicFirst/Assets.xcassets`: app icon and menu bar icon assets.
 - `scripts/build-and-run.sh`: local build and restart helper.
+- `scripts/diagnostics/watch-system-banner-hosts.swift`: watches system banner hosts while checking HUD placement.
 - `scripts/package-preview-release.sh`: local preview release packaging helper.
 - `docs/visual-assets.md`: icon assets and visual notes.
 - `docs/troubleshooting.md`: FAQ and troubleshooting notes.

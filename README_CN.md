@@ -142,13 +142,18 @@ App 当前包含：
 - `MicFirst/AudioInputViewModel.swift`：输入切换、音量和恢复确认。
 - `MicFirst/InputPriorityStore.swift`：优先级持久化、设备记忆和旧版迁移。
 - `MicFirst/PreferredInputHUD.swift`：恢复 HUD。
+- `MicFirst/NativeHUDProbe.swift`、`MicFirst/HUDPlacement.swift`：实时识别系统横幅并让开 HUD。
+- `MicFirst/StatusItemController.swift`、`MicFirst/HUDAnchor.swift`：根据 MicFirst 自己的菜单栏图标定位 HUD。
 - `MicFirstTests/InputPriorityTests.swift`：优先级与设备切换回归测试。
 - `docs/input-priority.md`：行为规则、测试方式和设计稿链接。
+- `docs/hud-anchor-diagnostics.md`：HUD 定位、系统横幅窗口特征和真机检查方法。
+- `docs/native-hud-investigation.md`：系统横幅窗口是如何确认的，以及更早的尝试记录。
 - `MicFirst/CoreAudioInputManager.swift`：Core Audio 封装。
 - `MicFirst/InputDevice.swift`：输入设备模型和图标推断逻辑。
 - `MicFirst/HUDMicrophone.png`：HUD 麦克风资源。
 - `MicFirst/Assets.xcassets`：app 图标和菜单栏图标资源目录。
 - `scripts/build-and-run.sh`：本地构建和重启辅助脚本。
+- `scripts/diagnostics/watch-system-banner-hosts.swift`：检查 HUD 位置时观察系统横幅窗口。
 - `scripts/package-preview-release.sh`：本地 preview release 打包辅助脚本。
 - `docs/visual-assets.md`：图标资源和视觉说明。
 - `docs/troubleshooting.md`：FAQ 和故障排查说明。

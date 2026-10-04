@@ -662,6 +662,8 @@ final class InputPriorityTests: XCTestCase {
         XCTAssertEqual(audio.currentID, 1)
     }
 
+    /// The audio callback holds the model weakly. Keep the returned model in a variable for the whole
+    /// test, or events are dropped and checks that expect no write pass without testing anything.
     private func makeModel(settleDelay: TimeInterval? = nil) -> (AudioInputViewModel, FakeAudioManager, FakeHUD) {
         let audio = FakeAudioManager()
         let hud = FakeHUD()

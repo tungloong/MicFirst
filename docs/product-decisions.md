@@ -57,5 +57,34 @@ from the store. Both binaries use bundle ID `com.tenglong.MicFirst`, the same
 
 `com.tungloong.AudioInputLocker` stays with the retired AudioInputLocker product.
 MicFirst does not use it. The preference key inside the app stays
-`inputPriorityPreferences.v1`. No public MicFirst binary has shipped, so there
-is no released preference domain to migrate.
+`inputPriorityPreferences.v1`. At the time no public MicFirst binary had shipped,
+so there was no released preference domain to migrate.
+
+## 2026-10-02 — The HUD avoids the system AirPods HUD live
+
+MicFirst's HUD must not overlap Apple's AirPods HUD; this reopened the closed
+September investigation. While visible, the HUD reads Apple's banner host from
+public window metadata and moves to the nearest free side of the same row, never
+to a lower row. It keeps the centered 290 pt of a host clear, because metadata
+does not say which banner is showing. No private API, Accessibility, or Screen
+Recording permission is used, so shipped sandboxed builds behave like Debug. See
+[HUD behavior](input-priority.md) and the
+[investigation](native-hud-investigation.md).
+
+## 2026-10-03 — The HUD appears only for a real switch
+
+The HUD appears only when MicFirst's own write changed the route. After a device
+arrives or leaves, MicFirst gives the system a short wait to make its own route
+change; an external takeover is still restored at once.
+
+## 2026-10-03 — A Bluetooth microphone does not follow its output
+
+Speaker output with an AirPods microphone is a legitimate setup, so moving the
+output elsewhere does not make MicFirst give up a worn headset's microphone.
+AirPods leave Core Audio when they are taken off, so no extra rule is needed for
+headsets that are not worn.
+
+## 2026-10-03 — Repository wording is separate from App Store copy
+
+After the 1.0.1 review rejection (guideline 5.2.5), App Store metadata avoids
+Apple product names such as AirPods. The GitHub READMEs and docs may name them.

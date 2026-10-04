@@ -19,6 +19,14 @@ supports it.
 It is designed for that workflow. While Input Priority is on, the app uses the
 first available device in the saved order and restores it after external changes. Behavior can still vary by device firmware and macOS routing rules.
 
+### When does the HUD appear?
+
+Only when MicFirst itself switches the input back to your highest-priority
+available microphone. If macOS already picked that device, for example when
+AirPods at the top of your list connect, there is nothing to restore and no HUD
+appears. While a system AirPods, volume, or brightness banner is on screen, the
+HUD moves beside it, except while the pointer rests on the HUD.
+
 ### Does the app need microphone permission?
 
 The app does not record audio, so it is not expected to request microphone
@@ -48,6 +56,10 @@ Core Audio 列出输入设备、切换系统默认输入、在设备支持时读
 ### 输入优先级支持 AirPods 和 USB 麦克风吗？
 
 这是它主要想解决的场景之一。输入优先级开启时，App 始终选择排序最靠前的可用设备；其他进程改变默认输入后会自动恢复。实际表现仍可能受设备固件和 macOS 路由规则影响。
+
+### HUD 什么时候出现？
+
+只在 MicFirst 自己把输入切回最高优先级的可用麦克风时出现。如果系统已经选中了这个设备，比如排在第一的 AirPods 刚连上，就没有需要恢复的，也不会弹 HUD。屏幕上有系统的 AirPods、音量或亮度横幅时，HUD 会让到旁边；鼠标停在 HUD 上时它不会移动。
 
 ### app 需要麦克风权限吗？
 
