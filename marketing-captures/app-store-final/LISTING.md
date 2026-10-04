@@ -12,14 +12,17 @@ Revised after the 1.0.1 (2) rejection on 2026-10-02 (guidelines 5.2.5 and 2.3.7)
 
 ## English (U.S.)
 
+Name (was "MicFirst"):
+MicFirst – Microphone Switcher
+
 Subtitle:
-Auto-switch to your best mic
+Stop headsets hijacking input
 
 Promotional text:
 Mic switched mid-call? MicFirst puts your microphones in priority order and switches back automatically. It never records audio or collects data.
 
-Keywords (no trademarks; "auto" moved to the subtitle):
-microphone,input,switcher,default,bluetooth,podcast,headset,usb,priority,voice,device,meeting,call
+Keywords (no trademarks; no words already in the name or subtitle):
+default,auto,bluetooth,headphones,usb,audio,sound,priority,podcast,meeting,call,voice,recording
 
 Description:
 Your wireless earbuds connect, and suddenly your video call is using their mic instead of the USB microphone on your desk. You notice five minutes into the call, or after the podcast is recorded.
@@ -50,19 +53,24 @@ What's New:
 MicFirst now keeps your microphone where you want it:
 • Set an order for all your mics and MicFirst always uses the best one that is connected.
 • If Bluetooth headphones or another app take over the input, MicFirst switches it back and tells you.
+• The switch notice now stays clear of system banners and only appears when MicFirst actually changes the input.
+• Plugging and unplugging mics is handled more smoothly.
 • Hide inputs you never want used.
 Thanks for trying MicFirst. Feedback and ideas are welcome via the App Support link.
 
 ## 简体中文
 
+名称（原为“MicFirst”）：
+MicFirst - 麦克风自动切换
+
 副标题：
-自动切换到首选麦克风
+耳机连上，输入设备也不乱跳
 
 宣传文本：
 通话中麦克风又被耳机抢走？MicFirst 按你设定的优先级自动切回首选麦克风。不录音，不收集任何数据。
 
-关键词（不含商标；「切换」已在副标题里）：
-话筒,输入设备,直播,声卡,蓝牙,耳机,会议,录音,播客,网课,优先级,外接,USB
+关键词（不含商标，不重复名称和副标题里的词）：
+话筒,蓝牙,外接,声卡,直播,会议,录音,播客,网课,优先级,默认,音频,USB
 
 描述：
 无线耳机一连上，会议软件就悄悄改用了耳机上的麦克风，桌上那支 USB 麦克风成了摆设。等你发现时，会已经开了五分钟，或者播客已经录完了。
@@ -93,5 +101,7 @@ MicFirst 从不录音、监听或上传任何声音，只负责选择 macOS 使�
 MicFirst 让麦克风乖乖待在你选的位置：
 • 为所有麦克风设定顺序，始终使用已连接的最佳设备。
 • 蓝牙耳机或其他 App 抢走输入时，自动切回并提示你。
+• 切换提示会避开系统通知横幅，只在 MicFirst 真正切换输入时出现。
+• 插拔麦克风时切换更稳定。
 • 可隐藏不想使用的输入设备。
 感谢使用 MicFirst，欢迎通过「App 支持」链接反馈建议。
