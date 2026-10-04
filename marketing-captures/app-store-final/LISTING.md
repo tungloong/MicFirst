@@ -53,9 +53,13 @@ What's New:
 MicFirst now keeps your microphone where you want it:
 • Set an order for all your mics and MicFirst always uses the best one that is connected.
 • If Bluetooth headphones or another app take over the input, MicFirst switches it back and tells you.
-• The switch notice now stays clear of system banners and only appears when MicFirst actually changes the input.
-• Plugging and unplugging mics is handled more smoothly.
 • Hide inputs you never want used.
+
+Also in this update:
+• The notice now steps aside for the system's own volume, brightness and headphone banners instead of covering them.
+• The notice appears only when MicFirst actually switches your input, so connecting or putting away headphones stays quiet.
+• Fixed a notice that could disappear right after it appeared.
+
 Thanks for trying MicFirst. Feedback and ideas are welcome via the App Support link.
 
 ## 简体中文
@@ -101,7 +105,11 @@ MicFirst 从不录音、监听或上传任何声音，只负责选择 macOS 使�
 MicFirst 让麦克风乖乖待在你选的位置：
 • 为所有麦克风设定顺序，始终使用已连接的最佳设备。
 • 蓝牙耳机或其他 App 抢走输入时，自动切回并提示你。
-• 切换提示会避开系统通知横幅，只在 MicFirst 真正切换输入时出现。
-• 插拔麦克风时切换更稳定。
 • 可隐藏不想使用的输入设备。
+
+本次更新还包括：
+• 切回提示会主动避让系统的音量、亮度和耳机连接横幅，不再互相遮挡。
+• 只有 MicFirst 真的切换了输入时才弹出提示，连接或收起耳机时不再打扰。
+• 修复了提示偶尔刚出现就消失的问题。
+
 感谢使用 MicFirst，欢迎通过「App 支持」链接反馈建议。
