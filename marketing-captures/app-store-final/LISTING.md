@@ -13,16 +13,16 @@ Revised after the 1.0.1 (2) rejection on 2026-10-02 (guidelines 5.2.5 and 2.3.7)
 ## English (U.S.)
 
 Name (was "MicFirst"):
-MicFirst – Microphone Switcher
+MicFirst – Keep Your Mic First
 
 Subtitle:
-Auto-switch to your best mic
+Stop devices hijacking input
 
 Promotional text:
 Mic switched mid-call? MicFirst puts your microphones in priority order and switches back automatically. It never records audio or collects data.
 
 Keywords (no trademarks; no words already in the name or subtitle):
-default,input,headset,bluetooth,headphones,usb,audio,sound,priority,podcast,meeting,call,voice
+microphone,switcher,default,headset,bluetooth,headphones,usb,audio,priority,podcast,meeting,call
 
 Description:
 Your wireless earbuds connect, and suddenly your video call is using their mic instead of the USB microphone on your desk. You notice five minutes into the call, or after the podcast is recorded.
@@ -61,16 +61,16 @@ Thanks for trying MicFirst. Feedback and ideas are welcome via the App Support l
 ## 简体中文
 
 名称（原为“MicFirst”）：
-MicFirst - 麦克风自动切换
+MicFirst – 保持你的首选麦克风
 
 副标题：
-耳机连上，输入设备也不乱跳
+音频输入设备不乱跳
 
 宣传文本：
 通话中麦克风又被耳机抢走？MicFirst 按你设定的优先级自动切回首选麦克风。不录音，不收集任何数据。
 
 关键词（不含商标，不重复名称和副标题里的词）：
-话筒,蓝牙,外接,声卡,直播,会议,录音,播客,网课,优先级,默认,音频,USB
+话筒,切换,耳机,蓝牙,外接,声卡,直播,会议,录音,播客,网课,优先级,默认,USB
 
 描述：
 无线耳机一连上，会议软件就悄悄改用了耳机上的麦克风，桌上那支 USB 麦克风成了摆设。等你发现时，会已经开了五分钟，或者播客已经录完了。
