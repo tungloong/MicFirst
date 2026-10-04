@@ -16,13 +16,13 @@ Name (was "MicFirst"):
 MicFirst – Microphone Switcher
 
 Subtitle:
-Stop headsets hijacking input
+Auto-switch to your best mic
 
 Promotional text:
 Mic switched mid-call? MicFirst puts your microphones in priority order and switches back automatically. It never records audio or collects data.
 
 Keywords (no trademarks; no words already in the name or subtitle):
-default,auto,bluetooth,headphones,usb,audio,sound,priority,podcast,meeting,call,voice,recording
+default,input,headset,bluetooth,headphones,usb,audio,sound,priority,podcast,meeting,call,voice
 
 Description:
 Your wireless earbuds connect, and suddenly your video call is using their mic instead of the USB microphone on your desk. You notice five minutes into the call, or after the podcast is recorded.
