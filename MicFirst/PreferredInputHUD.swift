@@ -605,7 +605,7 @@ private struct PreferredInputHUDView: View {
                 .frame(width: Self.textColumnWidth)
 
             HStack {
-                PreferredInputHUDIcon(size: Self.hudIconSize)
+                PreferredInputHUDIcon(size: Self.hudIconSize, isPriorityEnabled: !isUnlocked)
                     .frame(width: Self.hudIconSize, height: Self.hudIconSize)
 
                 Spacer(minLength: 0)
@@ -841,10 +841,11 @@ private struct MarqueeTextWidthPreferenceKey: PreferenceKey {
 
 private struct PreferredInputHUDIcon: View {
     let size: CGFloat
+    let isPriorityEnabled: Bool
 
     var body: some View {
         Group {
-            if let image = NSImage(named: "HUDMicrophone") ?? NSImage(named: "HUDMicrophone.png") {
+            if let image = illustration {
                 Image(nsImage: image)
                     .resizable()
                     .scaledToFit()
@@ -857,6 +858,13 @@ private struct PreferredInputHUDIcon: View {
         .frame(width: size, height: size)
         .compositingGroup()
         .shadow(color: .black.opacity(0.14), radius: 1.4, x: 0.35, y: 0.9)
+    }
+
+    /// Approved 34 pt mascot: a baton-carrying runner while Input Priority is on,
+    /// and the arms-folded pose waiting on the cube once it is off.
+    private var illustration: NSImage? {
+        let name = isPriorityEnabled ? "HUDMicrophoneEnabled" : "HUDMicrophoneDisabled"
+        return NSImage(named: name)
     }
 }
 

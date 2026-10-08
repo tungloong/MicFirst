@@ -10,12 +10,12 @@ final class AudioInputViewModel: ObservableObject {
     @Published private(set) var menuRows: [InputPriorityRow] = []
     @Published private(set) var automaticInputIsEnabled: Bool
     @Published private(set) var showsHUD: Bool
-    @Published private(set) var currentVolume: Double = 0
+    @Published private(set) var currentVolume: Double?
     @Published private(set) var volumeIsEnabled = false
     @Published private(set) var errorMessage: String?
 
-    var menuBarIconName: String {
-        automaticInputIsEnabled ? "MenuBarIconLocked" : "MenuBarIcon"
+    var menuBarMicrophoneState: MenuBarMicrophoneState {
+        MenuBarMicrophoneState(volume: currentVolume, automaticInputIsEnabled: automaticInputIsEnabled)
     }
 
     private struct Restoration {
@@ -154,10 +154,10 @@ final class AudioInputViewModel: ObservableObject {
     }
 
     func setCurrentVolume(_ volume: Double) {
+        guard volume.isFinite, volumeIsEnabled, let deviceID = currentDevice?.id else { return }
         let clampedVolume = min(max(volume, 0), 1)
         currentVolume = clampedVolume
         suppressVolumeEchoUntil = Date().addingTimeInterval(0.25)
-        guard volumeIsEnabled, let deviceID = currentDevice?.id else { return }
         volumeWriteWorkItem?.cancel()
         let workItem = DispatchWorkItem { [audioManager, weak self] in
             let result = Result { try audioManager.setInputVolume(Float(clampedVolume), for: deviceID) }
@@ -214,6 +214,8 @@ final class AudioInputViewModel: ObservableObject {
             }
         } catch {
             // A failed enumeration is not evidence that remembered devices went offline.
+            currentVolume = nil
+            volumeIsEnabled = false
             errorMessage = error.localizedDescription
         }
     }
@@ -258,13 +260,18 @@ final class AudioInputViewModel: ObservableObject {
         preferences.observe(loadedDevices)
         updatePriorityRows()
         if let current = currentDevice {
-            // Suppress only the slider echo, never hot-plug or default-route events.
-            if current.uid != previousUID || Date() >= suppressVolumeEchoUntil {
-                currentVolume = Double(current.inputVolume ?? 0)
+            let readableVolume = current.inputVolume.flatMap { value -> Double? in
+                guard value.isFinite else { return nil }
+                return min(max(Double(value), 0), 1)
             }
-            volumeIsEnabled = current.supportsInputVolume
+            // Suppress only the slider echo, never hot-plug or default-route events.
+            // An unavailable reading invalidates the old value even during echo suppression.
+            if readableVolume == nil || current.uid != previousUID || Date() >= suppressVolumeEchoUntil {
+                currentVolume = readableVolume
+            }
+            volumeIsEnabled = current.supportsInputVolume && readableVolume != nil
         } else {
-            currentVolume = 0
+            currentVolume = nil
             volumeIsEnabled = false
         }
         if monitoredDeviceID != currentDevice?.id {

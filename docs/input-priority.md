@@ -70,11 +70,30 @@ The enabled priority button uses the system accent color. The hover-only close
 button uses an opaque system window background and primary label color so its
 contrast does not depend on the content behind the glass.
 
-The menu uses the system SwiftUI `MenuBarExtra` with `.window` style again.
-The intermediary `NSPopover` and attempted custom `NSPanel` were removed.
-SwiftUI owns the native menu chrome and outside-click dismissal; existing menu
-controls and Settings continue using their native SwiftUI environment. Opening
-the menu dismisses the HUD via the menu content's appearance callback.
+SwiftUI `MenuBarExtra` owns the status item and its `.window` menu. The model
+remains the source of truth. Opening the menu dismisses the HUD.
+On macOS 26+, `MenuBarSymbolRenderer` attaches live native symbol image views
+to MicFirst's own public `NSStatusBarButton`; its canvas passes hit testing to
+the original button. A stable transparent label image preserves SwiftUI's
+status-item registration and layout. This narrow bridge keeps symbol effects
+alive because `MenuBarExtra` converted its SwiftUI label to a static `NSImage`
+and did not pass through the requested animation. Menu presentation, Settings,
+and dismissal stay with SwiftUI.
+
+The menu-bar microphone has nine visual states. An unknown input volume uses a
+plain microphone, with a lock when automatic priority is enabled. A confirmed
+zero uses the same native muted microphone in both modes. Low, medium, and high
+input volume activate one, two, and three native Variable Color waves, each with
+an unlocked and locked version. A missing route, unreadable property, invalid
+reading, or failed enumeration keeps volume unknown and disables the slider;
+the slider's zero placeholder never classifies the icon as muted. A readable
+volume on a read-only device still displays its level. These are the input-volume
+settings, not live audio levels. See [visual assets](visual-assets.md) for the
+resource mapping and the menu-bar animation evidence. On macOS 26+, added waves
+draw on and removed waves draw off using native SF Symbols effects, with gray
+inactive waves retained. Draw and replacement effects share the user-approved
+0.8 speed multiplier (2026-10-08). Earlier macOS versions and Reduce Motion use static updates. The
+newer APIs are availability-guarded; macOS 13 hardware has not been tested.
 
 The HUD prefers the center of MicFirst's own menu-bar button, with its capsule
 9 pt below the menu bar. `StatusItemController` only provides that anchor; it
@@ -170,6 +189,7 @@ names receive a USB/Bluetooth suffix in the menu; original device names are reta
 
 - `InputPriorityStore.swift`: persistence, migration, order, discovery, and target selection.
 - `AudioInputViewModel.swift`: Core Audio events, manual intent, route verification, bounded retries, and volume.
+- `MenuBarSymbolRenderer.swift`: a public AppKit bridge for live macOS 26 Draw effects inside SwiftUI's own status button.
 - `SoundMenuView.swift`: the compact 308 pt menu, native controls, and system/app/quit actions.
 - `InputPrioritySettingsView.swift`: native Settings scene content, device controls, and Settings entry point.
 - `ReorderableInputList.swift`: shared UID-based drag behavior, scroll handling, and hover visibility.
@@ -200,6 +220,14 @@ the global switch, Settings, and offline deletion. Preview preferences are isola
 For an already-expired offline device, launch the Debug app with
 `--priority-preview --expired-offline`; add `--many-inputs` to exercise scrolling.
 `./scripts/build-and-run.sh` returns to the regular menu bar utility.
+
+Use `./scripts/build-and-run.sh --menu-symbol-review` for isolated symbol review.
+Its controls drive the actual native status button through the nine volume/mode
+states and No Devices. Show Nine States displays the compiled static assets in
+both appearances. Show Actual Menu opens the real anchored popover; Simulate
+Reduce Motion exercises the static branch without changing system preferences.
+Public status-button captures go to the app container's temporary directory. [The symbol validation record](design/status-hud/2026-10-07-native-symbols/README.md)
+documents their scope and the animation result.
 
 Use `./scripts/build-and-run.sh --hud-preview` to show the finalized real HUD
 with simulated devices and isolated preferences. Its initial timeout is extended

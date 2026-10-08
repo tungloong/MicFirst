@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+        0F2000010000000000000001 /* MenuBarSymbolRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F2000010000000000000011 /* MenuBarSymbolRenderer.swift */; };
+        0F1000010000000000000001 /* MenuBarMicrophoneState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1000010000000000000011 /* MenuBarMicrophoneState.swift */; };
+        0F1000010000000000000002 /* MenuBarMicrophoneState.swift in Tests */ = {isa = PBXBuildFile; fileRef = 0F1000010000000000000011 /* MenuBarMicrophoneState.swift */; };
 		0F0000010000000000000008 /* HUDAnchorTests.swift in Tests */ = {isa = PBXBuildFile; fileRef = 0F0000010000000000000018 /* HUDAnchorTests.swift */; };
 		0F0000010000000000000005 /* HUDDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0000010000000000000015 /* HUDDiagnostics.swift */; };
 		0F0000010000000000000007 /* HUDDiagnostics.swift in Tests */ = {isa = PBXBuildFile; fileRef = 0F0000010000000000000015 /* HUDDiagnostics.swift */; };
@@ -22,7 +25,6 @@
 		0A0000010000000000000003 /* InputDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0000010000000000000013 /* InputDevice.swift */; };
 		0A0000010000000000000004 /* CoreAudioInputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0000010000000000000014 /* CoreAudioInputManager.swift */; };
 		0A0000010000000000000005 /* AudioInputViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0000010000000000000015 /* AudioInputViewModel.swift */; };
-		0A0000010000000000000006 /* HUDMicrophone.png in Resources */ = {isa = PBXBuildFile; fileRef = 0A0000010000000000000017 /* HUDMicrophone.png */; };
 		0A0000010000000000000007 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0A000001000000000000001A /* Localizable.strings */; };
 		0A0000010000000000000008 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0A000001000000000000001B /* Assets.xcassets */; };
 		0A0000010000000000000009 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 0A000001000000000000001D /* PrivacyInfo.xcprivacy */; };
@@ -40,6 +42,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+        0F2000010000000000000011 /* MenuBarSymbolRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarSymbolRenderer.swift; sourceTree = "<group>"; };
+        0F1000010000000000000011 /* MenuBarMicrophoneState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarMicrophoneState.swift; sourceTree = "<group>"; };
 		0F0000010000000000000018 /* HUDAnchorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDAnchorTests.swift; sourceTree = "<group>"; };
 		0F0000010000000000000015 /* HUDDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDDiagnostics.swift; sourceTree = "<group>"; };
 		0F0000010000000000000014 /* NativeHUDProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeHUDProbe.swift; sourceTree = "<group>"; };
@@ -53,7 +57,6 @@
 		0A0000010000000000000014 /* CoreAudioInputManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAudioInputManager.swift; sourceTree = "<group>"; };
 		0A0000010000000000000015 /* AudioInputViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioInputViewModel.swift; sourceTree = "<group>"; };
 		0A0000010000000000000016 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		0A0000010000000000000017 /* HUDMicrophone.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = HUDMicrophone.png; sourceTree = "<group>"; };
 		0A0000010000000000000018 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		0A0000010000000000000019 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		0A000001000000000000001B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -93,6 +96,8 @@
 			isa = PBXGroup;
 			children = (
 				0A0000010000000000000011 /* MicFirstApp.swift */,
+                0F2000010000000000000011 /* MenuBarSymbolRenderer.swift */,
+                0F1000010000000000000011 /* MenuBarMicrophoneState.swift */,
 					0A0000010000000000000012 /* SoundMenuView.swift */,
 					0A0000010000000000000015 /* AudioInputViewModel.swift */,
 				0B0000010000000000000012 /* PreferredInputHUD.swift */,
@@ -107,7 +112,6 @@
 				0D0000010000000000000011 /* ReorderableInputList.swift */,
 					0A0000010000000000000014 /* CoreAudioInputManager.swift */,
 					0A0000010000000000000013 /* InputDevice.swift */,
-				0A0000010000000000000017 /* HUDMicrophone.png */,
 				0A000001000000000000001B /* Assets.xcassets */,
 				0A000001000000000000001A /* Localizable.strings */,
 				0A000001000000000000001C /* MicFirst.entitlements */,
@@ -199,7 +203,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				0A0000010000000000000008 /* Assets.xcassets in Resources */,
-				0A0000010000000000000006 /* HUDMicrophone.png in Resources */,
 				0A0000010000000000000007 /* Localizable.strings in Resources */,
 				0A0000010000000000000009 /* PrivacyInfo.xcprivacy in Resources */,
 			);
@@ -213,6 +216,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				0A0000010000000000000001 /* MicFirstApp.swift in Sources */,
+                0F2000010000000000000001 /* MenuBarSymbolRenderer.swift in Sources */,
+                0F1000010000000000000001 /* MenuBarMicrophoneState.swift in Sources */,
 					0A0000010000000000000002 /* SoundMenuView.swift in Sources */,
 					0A0000010000000000000005 /* AudioInputViewModel.swift in Sources */,
 				0B0000010000000000000002 /* PreferredInputHUD.swift in Sources */,
@@ -235,6 +240,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0C0000010000000000000001 /* InputDevice.swift in Sources */,
+                0F1000010000000000000002 /* MenuBarMicrophoneState.swift in Tests */,
 				0C0000010000000000000002 /* CoreAudioInputManager.swift in Sources */,
 				0C0000010000000000000003 /* InputPriorityStore.swift in Sources */,
 				0C0000010000000000000004 /* AudioInputViewModel.swift in Sources */,

@@ -46,7 +46,7 @@ uses the first available device and restores it after external route changes.
 
 ## Status and Installation
 
-MicFirst 1.0.0 is available in two ways:
+MicFirst 1.0.2 is available in two ways:
 
 - **Mac App Store**: install from the [App Store page](https://apps.apple.com/app/micfirst/id6814898645?mt=12)
   (in mainland China, use the [China storefront page](https://apps.apple.com/cn/app/micfirst/id6814898645?mt=12)).
@@ -163,7 +163,8 @@ receive a connection suffix so they can be distinguished.
 
 ## Project Layout
 
-- `MicFirst/MicFirstApp.swift`: app entry point and menu bar extra.
+- `MicFirst/MicFirstApp.swift`: app entry point and SwiftUI Settings scene.
+- `MicFirst/MenuBarSymbolRenderer.swift`: live native symbol animation inside SwiftUI's menu bar button.
 - `MicFirst/SoundMenuView.swift`: Sound-style menu popover.
 - `MicFirst/AudioInputViewModel.swift`: route coordination, volume, and verified restoration.
 - `MicFirst/InputPriorityStore.swift`: persistent order, discovery, and legacy migration.
@@ -176,8 +177,7 @@ receive a connection suffix so they can be distinguished.
 - `docs/native-hud-investigation.md`: how the system banner host was identified, with earlier attempts as history.
 - `MicFirst/CoreAudioInputManager.swift`: Core Audio wrapper.
 - `MicFirst/InputDevice.swift`: input device model and icon heuristics.
-- `MicFirst/HUDMicrophone.png`: HUD microphone asset.
-- `MicFirst/Assets.xcassets`: app icon and menu bar icon assets.
+- `MicFirst/Assets.xcassets`: app icon, menu bar icon, and HUD mascot assets.
 - `scripts/build-and-run.sh`: local build and restart helper.
 - `scripts/diagnostics/watch-system-banner-hosts.swift`: watches system banner hosts while checking HUD placement.
 - `scripts/package-preview-release.sh`: local preview release packaging helper.

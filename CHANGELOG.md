@@ -3,7 +3,25 @@
 Changes to MicFirst are recorded here. AudioInputLocker is a separate product;
 its release history remains in [its repository](https://github.com/tungloong/AudioInputLocker/releases).
 
-## Unreleased
+## 1.0.2 - 2026-10-08
+
+- The menu bar microphone now has nine states driven by the input volume
+  setting and automatic priority: an unknown volume shows a plain microphone
+  (locked when automatic priority is on); a confirmed zero shares one muted
+  microphone; low, medium, and high volumes show one, two, and three sound
+  waves, each with unlocked and locked variants. An unreadable volume no
+  longer appears as muted. These reflect the input volume setting, not live
+  audio levels.
+- On macOS 26 and later, sound-wave changes animate with the native Draw
+  on/off and replacement symbol effects; earlier systems and Reduce Motion
+  show static updates.
+- The restoration HUD now uses the two-state mascot at 34 pt: running with
+  the No. 1 baton while Input Priority is on, resting with folded arms while
+  it is off. Layout, wording, and timing are unchanged.
+- Covered the nine menu-bar states and unknown-volume handling with hostless
+  regression tests.
+
+## 1.0.1 - 2026-10-04 (Mac App Store only; no GitHub release)
 
 - The restoration HUD now moves aside while a system AirPods, volume, or
   brightness banner is on screen, in shipped sandboxed builds as well as Debug.

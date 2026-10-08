@@ -1,0 +1,487 @@
+{
+  "checkedAt": "2026-10-07T21:25:35.099130+08:00",
+  "host": {
+    "macOS": "27.0",
+    "build": "26A428",
+    "xcode": "Xcode 27.0\nBuild version 27A266a",
+    "sdk": "27.0"
+  },
+  "compiledSymbolView": {
+    "light": {
+      "states": [
+        {
+          "state": "unknown-off",
+          "file": "unknown-off-light.png",
+          "pixels": [
+            42,
+            36
+          ],
+          "pixelSHA256": "2c592561de5bfe622716a2f04f41532fb70a94897bafad3e775c3cc5ec7c5f1d"
+        },
+        {
+          "state": "unknown-on",
+          "file": "unknown-on-light.png",
+          "pixels": [
+            42,
+            36
+          ],
+          "pixelSHA256": "970da3814d718aacbc43fb0afdf9ae96a0ac5ce44a9d611790a4aa0d34c9ef35"
+        },
+        {
+          "state": "zero",
+          "file": "zero-light.png",
+          "pixels": [
+            42,
+            36
+          ],
+          "pixelSHA256": "ab943c7f4230305e681691978adbb8f7eca640f7a33d6359020d90baed4bb820"
+        },
+        {
+          "state": "low-off",
+          "file": "low-off-light.png",
+          "pixels": [
+            42,
+            36
+          ],
+          "pixelSHA256": "bdb716c6be33a66167186207bb57f4b83237ef5e21766446e412ed7ac55e0d72"
+        },
+        {
+          "state": "medium-off",
+          "file": "medium-off-light.png",
+          "pixels": [
+            42,
+            36
+          ],
+          "pixelSHA256": "fa2ae20f35b698e8ca47d524cb20262e770c3642d9e9468819bf2a7cd6d4a487"
+        },
+        {
+          "state": "high-off",
+          "file": "high-off-light.png",
+          "pixels": [
+            42,
+            36
+          ],
+          "pixelSHA256": "5193784336a7a557213173bba565f64efd5004df8c8350fe489d43ecdf049d11"
+        },
+        {
+          "state": "low-on",
+          "file": "low-on-light.png",
+          "pixels": [
+            42,
+            36
+          ],
+          "pixelSHA256": "d6333333f3df0778d23998c772409e1e0183e0500f31e1f0309b8709f6cb5939"
+        },
+        {
+          "state": "medium-on",
+          "file": "medium-on-light.png",
+          "pixels": [
+            42,
+            36
+          ],
+          "pixelSHA256": "2bceeb5e1fc009e6b214a71955faa2685c6d708096ddb25eab2e456dc5d4acff"
+        },
+        {
+          "state": "high-on",
+          "file": "high-on-light.png",
+          "pixels": [
+            42,
+            36
+          ],
+          "pixelSHA256": "7f39079e5c0e71284021a446755c6df2cdde7aa8b51b29e4aee2e683a0f624f8"
+        }
+      ],
+      "distinctPixelBuffers": 9
+    },
+    "dark": {
+      "states": [
+        {
+          "state": "unknown-off",
+          "file": "unknown-off-dark.png",
+          "pixels": [
+            42,
+            36
+          ],
+          "pixelSHA256": "fa6cc7fd40a2ab9558f4aa506878db7b01f1452efc8b6a6e47299fa5d614d1b7"
+        },
+        {
+          "state": "unknown-on",
+          "file": "unknown-on-dark.png",
+          "pixels": [
+            42,
+            36
+          ],
+          "pixelSHA256": "b67f1696bc436f6be4397ea958f6c350b3566cd2dd15bd33491cb17bcba31560"
+        },
+        {
+          "state": "zero",
+          "file": "zero-dark.png",
+          "pixels": [
+            42,
+            36
+          ],
+          "pixelSHA256": "5ca26b9c3d9d80aefcb8aa1627d58fa9f8799e0415bb83d9e817a75b530dd0cd"
+        },
+        {
+          "state": "low-off",
+          "file": "low-off-dark.png",
+          "pixels": [
+            42,
+            36
+          ],
+          "pixelSHA256": "adf256427b55c5b15acc40df3e2ed7fac2d84e616d84a7e4de8b7ae369147aec"
+        },
+        {
+          "state": "medium-off",
+          "file": "medium-off-dark.png",
+          "pixels": [
+            42,
+            36
+          ],
+          "pixelSHA256": "c0996aa5e85415705c51b815a281ab1c19725285c502116f4e270d25ece1c0cb"
+        },
+        {
+          "state": "high-off",
+          "file": "high-off-dark.png",
+          "pixels": [
+            42,
+            36
+          ],
+          "pixelSHA256": "54197f9ad56ef6dae9044c004d2bd9929087c808524c3c36518325bf23c22a63"
+        },
+        {
+          "state": "low-on",
+          "file": "low-on-dark.png",
+          "pixels": [
+            42,
+            36
+          ],
+          "pixelSHA256": "38ef386137c37c400f8153ab72227b1c8134a7640f8cace8a938567214b74bd7"
+        },
+        {
+          "state": "medium-on",
+          "file": "medium-on-dark.png",
+          "pixels": [
+            42,
+            36
+          ],
+          "pixelSHA256": "73e2eb6000df0835bce6d5d997f3e5b8148d975674727bfe226dc1e9cf81e5e8"
+        },
+        {
+          "state": "high-on",
+          "file": "high-on-dark.png",
+          "pixels": [
+            42,
+            36
+          ],
+          "pixelSHA256": "8c97006530bb22c2679802a3481e5ff7e34d99a030567291235780ff63b6b612"
+        }
+      ],
+      "distinctPixelBuffers": 9
+    }
+  },
+  "statusButton": {
+    "high-off": {
+      "file": "status-button/high-off.png",
+      "pixels": [
+        78,
+        60
+      ],
+      "pixelSHA256": "59e29d7ecc7762051a976a87b0a63836a229d61f1fac98d1e1c336553c81844b",
+      "metadata": "target=volume(MicFirst.MenuBarInputVolumeLevel.high, automatic: false) elapsed=0.6736270189285278 bounds=(0.0, 0.0, 39.0, 30.0) image=Optional(<NSImage <address> Size={22, 17} RepProvider=<NSImageSymbolRepProvider: <address>> symbol = MenuBarMicrophoneVolume>) layerAnimations=[] subviews=0"
+    },
+    "high-on": {
+      "file": "status-button/high-on.png",
+      "pixels": [
+        78,
+        66
+      ],
+      "pixelSHA256": "b6529ace0db86aeeb12786f64c517e1aec6561852e4692f07f8f6bad4f6e3e46",
+      "metadata": "target=volume(MicFirst.MenuBarInputVolumeLevel.high, automatic: true) elapsed=0.6853319406509399 bounds=(0.0, 0.0, 39.0, 33.0) image=Optional(<NSImage <address> Size={22, 20} RepProvider=<NSImageSymbolRepProvider: <address>> symbol = MenuBarMicrophoneVolumeLocked>) layerAnimations=[] subviews=0"
+    },
+    "low-off": {
+      "file": "status-button/low-off.png",
+      "pixels": [
+        78,
+        60
+      ],
+      "pixelSHA256": "6dbdad47a4358cbcecf696ee96ea5659d50dea37ea5a914858372fcbcbaae916",
+      "metadata": "target=volume(MicFirst.MenuBarInputVolumeLevel.low, automatic: false) elapsed=0.6730360984802246 bounds=(0.0, 0.0, 39.0, 30.0) image=Optional(<NSImage <address> Size={22, 17} RepProvider=<NSImageSymbolRepProvider: <address>> symbol = MenuBarMicrophoneVolume>) layerAnimations=[] subviews=0"
+    },
+    "low-on": {
+      "file": "status-button/low-on.png",
+      "pixels": [
+        78,
+        66
+      ],
+      "pixelSHA256": "1ab5ba5b0a8c08230119de0618bb26f30b62a010a1453c8f99668e59e32f17bd",
+      "metadata": "target=volume(MicFirst.MenuBarInputVolumeLevel.low, automatic: true) elapsed=0.6759220361709595 bounds=(0.0, 0.0, 39.0, 33.0) image=Optional(<NSImage <address> Size={22, 20} RepProvider=<NSImageSymbolRepProvider: <address>> symbol = MenuBarMicrophoneVolumeLocked>) layerAnimations=[] subviews=0"
+    },
+    "medium-off": {
+      "file": "status-button/medium-off.png",
+      "pixels": [
+        78,
+        60
+      ],
+      "pixelSHA256": "8b10216741d7284b45fd8d8d3821c9e5bfc74447ec94fc2904869f081459bda6",
+      "metadata": "target=volume(MicFirst.MenuBarInputVolumeLevel.medium, automatic: false) elapsed=0.6754559278488159 bounds=(0.0, 0.0, 39.0, 30.0) image=Optional(<NSImage <address> Size={22, 17} RepProvider=<NSImageSymbolRepProvider: <address>> symbol = MenuBarMicrophoneVolume>) layerAnimations=[] subviews=0"
+    },
+    "medium-on": {
+      "file": "status-button/medium-on.png",
+      "pixels": [
+        78,
+        66
+      ],
+      "pixelSHA256": "2532a91951040454190b1650953457c1b8def4aa3f7a0ccb120805a2b60bac61",
+      "metadata": "target=volume(MicFirst.MenuBarInputVolumeLevel.medium, automatic: true) elapsed=0.6701380014419556 bounds=(0.0, 0.0, 39.0, 33.0) image=Optional(<NSImage <address> Size={22, 20} RepProvider=<NSImageSymbolRepProvider: <address>> symbol = MenuBarMicrophoneVolumeLocked>) layerAnimations=[] subviews=0"
+    },
+    "no-devices": {
+      "file": "status-button/no-devices.png",
+      "pixels": [
+        78,
+        66
+      ],
+      "pixelSHA256": "c1f732182daffca34ad90c07c7738b7db432bb1009e67ee8d2a383bf6f5e7a59",
+      "metadata": "target=unknown(automatic: true) elapsed=0.664309024810791 bounds=(0.0, 0.0, 39.0, 33.0) image=Optional(<NSImage <address> Size={22, 19} RepProvider=<NSImageSymbolRepProvider: <address>> symbol = MenuBarMicrophoneUnknownLocked>) layerAnimations=[] subviews=0"
+    },
+    "unknown-off": {
+      "file": "status-button/unknown-off.png",
+      "pixels": [
+        60,
+        58
+      ],
+      "pixelSHA256": "b4df3ba02e656cdca5131b03a04375cb411694540daced20749e57f6c9b06dac",
+      "metadata": "target=unknown(automatic: false) elapsed=0.6778429746627808 bounds=(0.0, 0.0, 30.0, 29.0) image=Optional(<NSImage <address> Size={14, 16} RepProvider=<NSImageSymbolRepProvider: <address>> symbol = microphone.fill>) layerAnimations=[] subviews=0"
+    },
+    "unknown-on": {
+      "file": "status-button/unknown-on.png",
+      "pixels": [
+        78,
+        66
+      ],
+      "pixelSHA256": "c1f732182daffca34ad90c07c7738b7db432bb1009e67ee8d2a383bf6f5e7a59",
+      "metadata": "target=unknown(automatic: true) elapsed=0.6726590394973755 bounds=(0.0, 0.0, 39.0, 33.0) image=Optional(<NSImage <address> Size={22, 19} RepProvider=<NSImageSymbolRepProvider: <address>> symbol = MenuBarMicrophoneUnknownLocked>) layerAnimations=[] subviews=0"
+    },
+    "zero": {
+      "file": "status-button/zero.png",
+      "pixels": [
+        60,
+        60
+      ],
+      "pixelSHA256": "a42b1eaeb552d4621cd95b8bdffd113059578fb5e24fb08feab9f419b185754c",
+      "metadata": "target=muted elapsed=0.6624460220336914 bounds=(0.0, 0.0, 30.0, 30.0) image=Optional(<NSImage <address> Size={14, 16} RepProvider=<NSImageSymbolRepProvider: <address>> symbol = microphone.slash.fill>) layerAnimations=[] subviews=0"
+    }
+  },
+  "transitions": {
+    "transition-to-high-off": {
+      "sampleCount": 31,
+      "distinctPixelBuffers": 1,
+      "firstSampleSeconds": 0.021244049072265625,
+      "lastSampleSeconds": 0.6326980590820312,
+      "largestSampleGapSeconds": 0.038208961486816406,
+      "pixelRuns": [
+        {
+          "firstFrame": 0,
+          "lastFrame": 30,
+          "pixels": [
+            78,
+            60
+          ],
+          "pixelSHA256": "59e29d7ecc7762051a976a87b0a63836a229d61f1fac98d1e1c336553c81844b",
+          "publicLayerAnimations": "[]"
+        }
+      ]
+    },
+    "transition-to-high-on": {
+      "sampleCount": 31,
+      "distinctPixelBuffers": 1,
+      "firstSampleSeconds": 0.016628026962280273,
+      "lastSampleSeconds": 0.6119099855422974,
+      "largestSampleGapSeconds": 0.03450000286102295,
+      "pixelRuns": [
+        {
+          "firstFrame": 0,
+          "lastFrame": 30,
+          "pixels": [
+            78,
+            66
+          ],
+          "pixelSHA256": "b6529ace0db86aeeb12786f64c517e1aec6561852e4692f07f8f6bad4f6e3e46",
+          "publicLayerAnimations": "[]"
+        }
+      ]
+    },
+    "transition-to-low-off": {
+      "sampleCount": 31,
+      "distinctPixelBuffers": 1,
+      "firstSampleSeconds": 0.022083044052124023,
+      "lastSampleSeconds": 0.60316002368927,
+      "largestSampleGapSeconds": 0.03398704528808594,
+      "pixelRuns": [
+        {
+          "firstFrame": 0,
+          "lastFrame": 30,
+          "pixels": [
+            78,
+            60
+          ],
+          "pixelSHA256": "6dbdad47a4358cbcecf696ee96ea5659d50dea37ea5a914858372fcbcbaae916",
+          "publicLayerAnimations": "[]"
+        }
+      ]
+    },
+    "transition-to-low-on": {
+      "sampleCount": 31,
+      "distinctPixelBuffers": 1,
+      "firstSampleSeconds": 0.02455902099609375,
+      "lastSampleSeconds": 0.612637996673584,
+      "largestSampleGapSeconds": 0.03905904293060303,
+      "pixelRuns": [
+        {
+          "firstFrame": 0,
+          "lastFrame": 30,
+          "pixels": [
+            78,
+            66
+          ],
+          "pixelSHA256": "1ab5ba5b0a8c08230119de0618bb26f30b62a010a1453c8f99668e59e32f17bd",
+          "publicLayerAnimations": "[]"
+        }
+      ]
+    },
+    "transition-to-medium-off": {
+      "sampleCount": 31,
+      "distinctPixelBuffers": 1,
+      "firstSampleSeconds": 0.01973402500152588,
+      "lastSampleSeconds": 0.6030639410018921,
+      "largestSampleGapSeconds": 0.03918802738189697,
+      "pixelRuns": [
+        {
+          "firstFrame": 0,
+          "lastFrame": 30,
+          "pixels": [
+            78,
+            60
+          ],
+          "pixelSHA256": "8b10216741d7284b45fd8d8d3821c9e5bfc74447ec94fc2904869f081459bda6",
+          "publicLayerAnimations": "[]"
+        }
+      ]
+    },
+    "transition-to-medium-on": {
+      "sampleCount": 31,
+      "distinctPixelBuffers": 1,
+      "firstSampleSeconds": 0.0179060697555542,
+      "lastSampleSeconds": 0.6221930980682373,
+      "largestSampleGapSeconds": 0.03465306758880615,
+      "pixelRuns": [
+        {
+          "firstFrame": 0,
+          "lastFrame": 30,
+          "pixels": [
+            78,
+            66
+          ],
+          "pixelSHA256": "2532a91951040454190b1650953457c1b8def4aa3f7a0ccb120805a2b60bac61",
+          "publicLayerAnimations": "[]"
+        }
+      ]
+    },
+    "transition-to-no-devices": {
+      "sampleCount": 31,
+      "distinctPixelBuffers": 1,
+      "firstSampleSeconds": 0.013404011726379395,
+      "lastSampleSeconds": 0.6075659990310669,
+      "largestSampleGapSeconds": 0.040763020515441895,
+      "pixelRuns": [
+        {
+          "firstFrame": 0,
+          "lastFrame": 30,
+          "pixels": [
+            78,
+            66
+          ],
+          "pixelSHA256": "c1f732182daffca34ad90c07c7738b7db432bb1009e67ee8d2a383bf6f5e7a59",
+          "publicLayerAnimations": "[]"
+        }
+      ]
+    },
+    "transition-to-unknown-off": {
+      "sampleCount": 31,
+      "distinctPixelBuffers": 1,
+      "firstSampleSeconds": 0.017506957054138184,
+      "lastSampleSeconds": 0.6085870265960693,
+      "largestSampleGapSeconds": 0.04033100605010986,
+      "pixelRuns": [
+        {
+          "firstFrame": 0,
+          "lastFrame": 30,
+          "pixels": [
+            60,
+            58
+          ],
+          "pixelSHA256": "b4df3ba02e656cdca5131b03a04375cb411694540daced20749e57f6c9b06dac",
+          "publicLayerAnimations": "[]"
+        }
+      ]
+    },
+    "transition-to-unknown-on": {
+      "sampleCount": 31,
+      "distinctPixelBuffers": 1,
+      "firstSampleSeconds": 0.020702004432678223,
+      "lastSampleSeconds": 0.6068320274353027,
+      "largestSampleGapSeconds": 0.03581702709197998,
+      "pixelRuns": [
+        {
+          "firstFrame": 0,
+          "lastFrame": 30,
+          "pixels": [
+            78,
+            66
+          ],
+          "pixelSHA256": "c1f732182daffca34ad90c07c7738b7db432bb1009e67ee8d2a383bf6f5e7a59",
+          "publicLayerAnimations": "[]"
+        }
+      ]
+    },
+    "transition-to-zero": {
+      "sampleCount": 31,
+      "distinctPixelBuffers": 1,
+      "firstSampleSeconds": 0.02992403507232666,
+      "lastSampleSeconds": 0.6029170751571655,
+      "largestSampleGapSeconds": 0.05140197277069092,
+      "pixelRuns": [
+        {
+          "firstFrame": 0,
+          "lastFrame": 30,
+          "pixels": [
+            60,
+            60
+          ],
+          "pixelSHA256": "a42b1eaeb552d4621cd95b8bdffd113059578fb5e24fb08feab9f419b185754c",
+          "publicLayerAnimations": "[]"
+        }
+      ]
+    }
+  },
+  "transitionScope": {
+    "sourceAtCapture": "Final MicFirstMenuSymbol: .contentTransition(.symbolEffect(.replace)) plus .animation(.default, value: state); macOS 14+ branch.",
+    "reduceMotion": false,
+    "reduceMotionCheck": "Public NSWorkspace.accessibilityDisplayShouldReduceMotion read during the final pass.",
+    "appSourceSHA256": "1c8eee32f8e461cc17461f01a9788ef0982d1a729b1b245566e5f4d1c0eaaa23",
+    "finalAnimationValidation": "Completed: CUA drove all nine states and No Devices after the final Debug build. Every frame file was newer than that executable.",
+    "observation": "Each public NSStatusBarButton capture contained only the target image: 31 identical pixel buffers per transition, no intermediate buffers and no public layer animations.",
+    "captureLimit": "These are cached renders of our own public view, not a video of the desktop compositor. No visible menu-bar transition is claimed. Ordinary SwiftUI preview transitions do not establish MenuBarExtra animation behavior."
+  },
+  "uiChecks": {
+    "unknownReading": "Confirmed microphone (with/without lock), slider disabled.",
+    "zeroReading": "Confirmed shared mic.slash.fill in both automatic-priority modes.",
+    "noDevices": "Confirmed unknown microphone and disabled slider in both automatic-priority modes."
+  },
+  "sfSymbolsValidation": {
+    "MenuBarMicrophoneVolumeLocked": "sf-symbols-validation.png",
+    "MenuBarMicrophoneVolume": "sf-symbols-validation-volume.png",
+    "MenuBarMicrophoneUnknownLocked": "sf-symbols-validation-unknown-locked.png",
+    "result": "All three templates: No problems found; three variants each."
+  }
+}

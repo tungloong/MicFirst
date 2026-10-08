@@ -99,7 +99,9 @@ adjustments where screenshots showed a clear mismatch.
 
 The menu device-list icons use a device-to-SF-Symbol mapping informed by
 Core Audio device metadata and open-source reference research. The HUD uses the
-`AudioInputLocker/HUDMicrophone.png` asset instead of the device icon mapping.
+approved mascot images in `MicFirst/Assets.xcassets` instead of the device icon
+mapping: the running baton carrier while Input Priority is on, and the
+arms-folded pose waiting on the cube while it is off.
 
 ## Liquid Glass Notes
 

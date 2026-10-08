@@ -40,7 +40,7 @@ macOS 已经有一个原生风格的声音输出菜单，但没有一个同样�
 
 ## 当前状态与安装
 
-MicFirst 1.0.0 有两种安装方式：
+MicFirst 1.0.2 有两种安装方式：
 
 - **Mac App Store**：从 [App Store 页面](https://apps.apple.com/cn/app/micfirst/id6814898645?mt=12) 安装。
 - **直接下载**：从 [MicFirst Releases](https://github.com/tungloong/MicFirst/releases/latest) 下载 DMG，打开后把 MicFirst 拖进“应用程序”。
@@ -137,7 +137,8 @@ App 当前包含：
 
 ## 项目结构
 
-- `MicFirst/MicFirstApp.swift`：app 入口和菜单栏 extra。
+- `MicFirst/MicFirstApp.swift`：app 入口和 SwiftUI 设置场景。
+- `MicFirst/MenuBarSymbolRenderer.swift`：SwiftUI 菜单栏按钮内的原生符号动画。
 - `MicFirst/SoundMenuView.swift`：声音风格的菜单弹窗。
 - `MicFirst/AudioInputViewModel.swift`：输入切换、音量和恢复确认。
 - `MicFirst/InputPriorityStore.swift`：优先级持久化、设备记忆和旧版迁移。
@@ -150,8 +151,7 @@ App 当前包含：
 - `docs/native-hud-investigation.md`：系统横幅窗口是如何确认的，以及更早的尝试记录。
 - `MicFirst/CoreAudioInputManager.swift`：Core Audio 封装。
 - `MicFirst/InputDevice.swift`：输入设备模型和图标推断逻辑。
-- `MicFirst/HUDMicrophone.png`：HUD 麦克风资源。
-- `MicFirst/Assets.xcassets`：app 图标和菜单栏图标资源目录。
+- `MicFirst/Assets.xcassets`：app 图标、菜单栏图标和 HUD 插画资源目录。
 - `scripts/build-and-run.sh`：本地构建和重启辅助脚本。
 - `scripts/diagnostics/watch-system-banner-hosts.swift`：检查 HUD 位置时观察系统横幅窗口。
 - `scripts/package-preview-release.sh`：本地 preview release 打包辅助脚本。

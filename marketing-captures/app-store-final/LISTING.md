@@ -1,4 +1,4 @@
-# MicFirst App Store listing (resubmission, 2026-10-03)
+# MicFirst App Store listing (1.0.2, 2026-10-08)
 
 Source doc: https://claude.ai/code/artifact/bc74efb0-73cf-40e7-93a5-9db17b22cfbc
 
@@ -7,6 +7,8 @@ Screenshots: 2880x1800, upload in number order.
 - 简体中文: zh-01.png … zh-05.png
 
 Promotional text can change any time; subtitle, keywords, description and What's New go out with the next version.
+
+1.0.2 updates only What's New below for the nine-state menu icon and the two-state HUD. Name, subtitle, keywords, description, and screenshots are unchanged.
 
 Revised after the 1.0.1 (2) rejection on 2026-10-02 (guidelines 5.2.5 and 2.3.7): no Apple product names anywhere in the metadata, and no "free". Developer terms (open source, GitHub, MIT) are also out of the store copy; the code being public is said in plain words in the privacy section. Screenshots 1, 2 and 5 were redone; the AirPods status icon is gone from the menu bar strip. Device names inside the real app captures are left as they are.
 
@@ -50,15 +52,11 @@ MicFirst never records, listens to or uploads audio. It only chooses which input
 Requires macOS 13 or later. Available in English and Simplified Chinese.
 
 What's New:
-MicFirst now keeps your microphone where you want it:
-• Set an order for all your mics and MicFirst always uses the best one that is connected.
-• If Bluetooth headphones or another app take over the input, MicFirst switches it back and tells you.
-• Hide inputs you never want used.
+• The menu icon now reflects the input volume setting with nine states: unknown, muted, and low/medium/high with and without automatic priority. An unreadable volume no longer appears as muted.
+• On recent macOS versions, sound-wave changes animate with native symbol effects; older systems show static updates.
+• The restoration notice now shows the running mascot while Input Priority is on and the resting mascot while it is off.
 
-Also in this update:
-• The notice now steps aside for the system's own volume, brightness and headphone banners instead of covering them.
-• The notice appears only when MicFirst actually switches your input, so connecting or putting away headphones stays quiet.
-• Fixed a notice that could disappear right after it appeared.
+MicFirst reads the input volume setting only. It never records audio or measures live levels.
 
 Thanks for trying MicFirst. Feedback and ideas are welcome via the App Support link.
 
@@ -102,14 +100,10 @@ MicFirst 从不录音、监听或上传任何声音，只负责选择 macOS 使�
 需要 macOS 13 或更高版本。支持简体中文和英文。
 
 新内容：
-MicFirst 让麦克风乖乖待在你选的位置：
-• 为所有麦克风设定顺序，始终使用已连接的最佳设备。
-• 蓝牙耳机或其他 App 抢走输入时，自动切回并提示你。
-• 可隐藏不想使用的输入设备。
+• 菜单栏图标新增九种状态，按输入音量设置和自动优先级显示：未知、静音、低／中／高音量各分开关两态。读不到音量时不再显示为静音。
+• 在较新的 macOS 上，声波变化带原生符号动画；旧系统显示静态图标。
+• 切回提示改用两态新插画：开启自动优先级时奔跑，关闭时抱臂休息。
 
-本次更新还包括：
-• 切回提示会主动避让系统的音量、亮度和耳机连接横幅，不再互相遮挡。
-• 只有 MicFirst 真的切换了输入时才弹出提示，连接或收起耳机时不再打扰。
-• 修复了提示偶尔刚出现就消失的问题。
+MicFirst 只读取输入音量设置，不录音，也不测量实时音量。
 
 感谢使用 MicFirst，欢迎通过「App 支持」链接反馈建议。

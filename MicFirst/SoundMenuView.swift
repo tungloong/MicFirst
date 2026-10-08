@@ -79,7 +79,9 @@ struct SoundMenuView: View {
                     .foregroundStyle(.secondary)
                 Slider(
                     value: Binding(
-                        get: { viewModel.currentVolume },
+                        // The disabled slider needs a numeric placeholder. This
+                        // value is never used to classify the menu-bar symbol.
+                        get: { viewModel.currentVolume ?? 0 },
                         set: viewModel.setCurrentVolume
                     ), in: 0...1
                 )

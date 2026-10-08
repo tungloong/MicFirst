@@ -2,6 +2,47 @@ import AppKit
 import CoreAudio
 import XCTest
 
+final class MenuBarMicrophoneStateTests: XCTestCase {
+    func testOnlyConfirmedZeroUsesTheSharedMuteSymbol() {
+        for automatic in [false, true] {
+            XCTAssertEqual(MenuBarMicrophoneState(volume: 0, automaticInputIsEnabled: automatic), .muted)
+            XCTAssertEqual(MenuBarMicrophoneState(volume: nil, automaticInputIsEnabled: automatic), .unknown(automatic: automatic))
+            XCTAssertEqual(MenuBarMicrophoneState(volume: .nan, automaticInputIsEnabled: automatic), .unknown(automatic: automatic))
+            XCTAssertEqual(MenuBarMicrophoneState(volume: .infinity, automaticInputIsEnabled: automatic), .unknown(automatic: automatic))
+        }
+        XCTAssertEqual(MenuBarMicrophoneState.muted.symbolName, "mic.slash.fill")
+        XCTAssertTrue(MenuBarMicrophoneState.muted.usesSystemSymbol)
+        XCTAssertNil(MenuBarMicrophoneState.muted.variableValue)
+    }
+
+    func testThreeLevelsUseNativeVariableColorThresholds() {
+        for automatic in [false, true] {
+            for value in [0.0001, 0.25, 0.33] {
+                XCTAssertEqual(MenuBarMicrophoneState(volume: value, automaticInputIsEnabled: automatic), .volume(.low, automatic: automatic))
+            }
+            for value in [0.34, 0.5, 0.67] {
+                XCTAssertEqual(MenuBarMicrophoneState(volume: value, automaticInputIsEnabled: automatic), .volume(.medium, automatic: automatic))
+            }
+            for value in [0.68, 0.8, 1] {
+                XCTAssertEqual(MenuBarMicrophoneState(volume: value, automaticInputIsEnabled: automatic), .volume(.high, automatic: automatic))
+            }
+        }
+    }
+
+    func testNineVisualStatesUseNativeAndCustomSymbols() {
+        var states = [MenuBarMicrophoneState.muted]
+        for automatic in [false, true] {
+            states.append(.unknown(automatic: automatic))
+            states += MenuBarInputVolumeLevel.allCases.map { .volume($0, automatic: automatic) }
+        }
+        let visuals = Set(states.map { "\($0.symbolName):\($0.variableValue?.description ?? "static")" })
+        XCTAssertEqual(visuals.count, 9)
+        XCTAssertEqual(MenuBarMicrophoneState.unknown(automatic: false).symbolName, "mic.fill")
+        XCTAssertTrue(MenuBarMicrophoneState.unknown(automatic: false).usesSystemSymbol)
+        XCTAssertFalse(MenuBarMicrophoneState.unknown(automatic: true).usesSystemSymbol)
+    }
+}
+
 final class HUDPlacementTests: XCTestCase {
     private let screen = CGRect(x: 0, y: 0, width: 1710, height: 1112)
     private let anchor = CGRect(x: 1115, y: 971, width: 360, height: 136)
@@ -662,6 +703,66 @@ final class InputPriorityTests: XCTestCase {
         XCTAssertEqual(audio.currentID, 1)
     }
 
+    func testUnreadableVolumeWithWritableControlIsUnknown() async {
+        let (model, audio, _) = makeModel()
+        audio.available = [device(1, inputVolume: nil)]
+        await audio.emitChange()
+        XCTAssertNil(model.currentVolume)
+        XCTAssertFalse(model.volumeIsEnabled)
+        XCTAssertEqual(model.menuBarMicrophoneState, .unknown(automatic: true))
+        model.setAutomaticInputEnabled(false)
+        XCTAssertEqual(model.menuBarMicrophoneState, .unknown(automatic: false))
+        model.setCurrentVolume(0)
+        XCTAssertNil(model.currentVolume, "A disabled slider cannot turn an unknown reading into mute")
+    }
+
+    func testReadOnlyVolumeIsVisibleButCannotBeWritten() async {
+        let (model, audio, _) = makeModel()
+        audio.available = [device(1, supportsInputVolume: false, inputVolume: 0.8)]
+        await audio.emitChange()
+        XCTAssertEqual(model.menuBarMicrophoneState, .volume(.high, automatic: true))
+        XCTAssertFalse(model.volumeIsEnabled)
+        model.setCurrentVolume(0)
+        XCTAssertEqual(model.menuBarMicrophoneState, .volume(.high, automatic: true))
+    }
+
+    func testMissingControlAndNoDefaultRouteAreUnknown() async {
+        let (model, audio, _) = makeModel()
+        audio.available = [device(1, supportsInputVolume: false, inputVolume: nil)]
+        await audio.emitChange()
+        XCTAssertEqual(model.menuBarMicrophoneState, .unknown(automatic: true))
+        audio.available = []
+        audio.currentID = nil
+        await audio.emitChange()
+        XCTAssertNil(model.currentVolume)
+        XCTAssertFalse(model.volumeIsEnabled)
+        XCTAssertEqual(model.menuBarMicrophoneState, .unknown(automatic: true))
+    }
+
+    func testEnumerationFailureInvalidatesVolumeWithoutDeletingDeviceHistory() async {
+        let (model, audio, _) = makeModel()
+        audio.failEnumeration = true
+        await audio.emitChange()
+        XCTAssertNil(model.currentVolume)
+        XCTAssertFalse(model.volumeIsEnabled)
+        XCTAssertEqual(model.menuBarMicrophoneState, .unknown(automatic: true))
+        XCTAssertEqual(model.devices.count, 3)
+        XCTAssertEqual(model.priorityRows.count, 3)
+        audio.failEnumeration = false
+        await audio.emitChange()
+        XCTAssertEqual(model.menuBarMicrophoneState, .volume(.medium, automatic: true))
+    }
+
+    func testUnreadableVolumeOverridesOptimisticSliderEcho() async {
+        let (model, audio, _) = makeModel()
+        model.setCurrentVolume(0)
+        XCTAssertEqual(model.menuBarMicrophoneState, .muted)
+        audio.available = [device(1, inputVolume: nil)]
+        await audio.emitChange()
+        XCTAssertNil(model.currentVolume)
+        XCTAssertEqual(model.menuBarMicrophoneState, .unknown(automatic: true))
+    }
+
     /// The audio callback holds the model weakly. Keep the returned model in a variable for the whole
     /// test, or events are dropped and checks that expect no write pass without testing anything.
     private func makeModel(settleDelay: TimeInterval? = nil) -> (AudioInputViewModel, FakeAudioManager, FakeHUD) {
@@ -676,12 +777,13 @@ final class InputPriorityTests: XCTestCase {
 
 private func device(
     _ id: AudioDeviceID, uid: String? = nil, name: String? = nil,
-    transport: UInt32 = kAudioDeviceTransportTypeUSB, current: Bool = false
+    transport: UInt32 = kAudioDeviceTransportTypeUSB, current: Bool = false,
+    supportsInputVolume: Bool = true, inputVolume: Float? = 0.5
 ) -> InputDevice {
     InputDevice(
         id: id, uid: uid ?? String(id), name: name ?? "Device \(id)", manufacturer: "",
         modelUID: "", transportType: transport, inputChannels: 1, isDefault: current,
-        supportsInputVolume: true, inputVolume: 0.5)
+        supportsInputVolume: supportsInputVolume, inputVolume: inputVolume)
 }
 
 private final class FakeAudioManager: InputAudioManaging {
@@ -696,7 +798,8 @@ private final class FakeAudioManager: InputAudioManaging {
     func loadInputDevices() throws -> [InputDevice] {
         if failEnumeration { throw CoreAudioInputError.unavailable("Enumeration failed") }
         return available.map {
-            device($0.id, uid: $0.uid, name: $0.name, transport: $0.transportType, current: $0.id == currentID)
+            device($0.id, uid: $0.uid, name: $0.name, transport: $0.transportType, current: $0.id == currentID,
+                   supportsInputVolume: $0.supportsInputVolume, inputVolume: $0.inputVolume)
         }
     }
     func defaultInputDeviceID() throws -> AudioDeviceID { currentID ?? 0 }

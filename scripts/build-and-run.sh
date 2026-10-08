@@ -11,8 +11,8 @@ MODE="${1:---verify}"
 HUD_OPTION="${2:-}"
 
 case "$MODE" in
-  --verify|--preview|--hud-preview|--diagnostics) ;;
-  *) echo "Usage: $0 [--verify|--preview|--diagnostics|--hud-preview [--diagnostics]]" >&2; exit 2 ;;
+  --verify|--preview|--menu-symbol-review|--hud-preview|--diagnostics) ;;
+  *) echo "Usage: $0 [--verify|--preview|--menu-symbol-review|--diagnostics|--hud-preview [--diagnostics]]" >&2; exit 2 ;;
 esac
 
 if [[ $# -gt 2 || ( -n "$HUD_OPTION" && ( "$MODE" != "--hud-preview" || "$HUD_OPTION" != "--diagnostics" ) ) ]]; then
@@ -53,6 +53,8 @@ if [[ "$MODE" == "--hud-preview" ]]; then
   open -n "$APP_PATH" --args "${HUD_ARGS[@]}"
 elif [[ "$MODE" == "--preview" ]]; then
   open -n "$APP_PATH" --args --priority-preview
+elif [[ "$MODE" == "--menu-symbol-review" ]]; then
+  open -n "$APP_PATH" --args --priority-preview --menu-symbol-review
 elif [[ "$MODE" == "--diagnostics" ]]; then
   open -n "$APP_PATH" --args --hud-diagnostics
 else
